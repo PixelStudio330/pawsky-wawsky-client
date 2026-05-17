@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from '../context/AuthContext';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      {/* react hot toast */}
+    <AuthProvider>
+      {/* React Hot Toast Notifications */}
       <Toaster
         position="top-center"
         toastOptions={{
@@ -26,8 +27,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         }}
       />
       
-      {/* for future AuthContext or ThemeProvider wrappers  */}
+      {/* Rest of the App Layout */}
       {children}
-    </>
+    </AuthProvider>
   );
 }
