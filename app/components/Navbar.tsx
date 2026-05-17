@@ -61,7 +61,7 @@ export default function Navbar() {
                     <Link href="/" className="flex items-center gap-3 group">
                       <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden transition-transform group-hover:scale-110 relative">
                          <Image 
-                           src="/img/logo.png" 
+                           src="/img/logo.jpg" 
                            alt="Pawsky Wawsky Logo" 
                            fill
                            className="object-contain"
@@ -148,7 +148,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* ✨ CENTRAL FLOATING LOGO (Slightly smaller sizing adjustment) */}
+          {/* Central Floating Logo */}
           <AnimatePresence>
             {!isScrolled && (
               <motion.div 
@@ -176,7 +176,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* 📱 MOBILE SCREEN DRAWER */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div 
