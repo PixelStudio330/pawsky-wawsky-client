@@ -21,7 +21,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    logout();
+    await logout();
     setMobileMenuOpen(false);
     router.push("/");
   };
@@ -33,11 +33,12 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`fixed w-full z-[100] transition-all duration-500 ease-in-out ${
-        isScrolled ? "top-0 px-0" : "top-6 px-6"
+    
+      <nav className={`fixed left-0 right-0 z-[100] w-full transition-all duration-500 ease-in-out ${
+        isScrolled ? "top-0 px-0" : "top-6 px-4 md:px-8"
       }`}>
-        <div className={`container mx-auto relative transition-all duration-500 ${
-          isScrolled ? "max-w-full" : "max-w-6xl"
+        <div className={`mx-auto relative transition-all duration-500 w-full ${
+          isScrolled ? "max-w-full" : "max-w-7xl"
         }`}>
           
           <div className={`
@@ -48,7 +49,7 @@ export default function Navbar() {
               : "px-8 py-3 rounded-full border border-white/60"} 
           `}>
             
-            {/* 🌿 LEFT SECTION */}
+            {/* left section */}
             <div className="flex items-center gap-8 flex-1">
               <AnimatePresence mode="wait">
                 {isScrolled ? (
@@ -61,13 +62,13 @@ export default function Navbar() {
                     <Link href="/" className="flex items-center gap-3 group">
                       <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden transition-transform group-hover:scale-110 relative">
                          <Image 
-                           src="/img/logo.jpg" 
-                           alt="Pawsky Wawsky Logo" 
-                           fill
-                           className="object-contain"
+                            src="/img/logo.jpg" 
+                            alt="Pawsky Wawsky Logo" 
+                            fill
+                            className="object-contain"
                          />
                       </div>
-                      <span className="text-xl font-black tracking-tighter text-[#6D7C75] font-sans">
+                      <span className="text-xl font-black tracking-tighter text-[#4E5C56] font-sans">
                         PAWSKY<span className="text-[#E7C78A]">WAWSKY</span>
                       </span>
                     </Link>
@@ -83,7 +84,7 @@ export default function Navbar() {
                       <Link 
                         key={link.name} 
                         href={link.href} 
-                        className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#6D7C75]/80 hover:text-[#6D7C75] transition-colors"
+                        className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#4E5C56] hover:text-[#6D7C75] transition-colors"
                       >
                         {link.name}
                       </Link>
@@ -92,14 +93,14 @@ export default function Navbar() {
                 )}
               </AnimatePresence>
               
-              <button onClick={() => setMobileMenuOpen(true)} className="md:hidden text-[#6D7C75]">
+              <button onClick={() => setMobileMenuOpen(true)} className="md:hidden text-[#4E5C56]">
                 <Menu size={24} />
               </button>
             </div>
 
             {!isScrolled && <div className="w-20 hidden md:block" />}
 
-            {/* 🌸 RIGHT SECTION */}
+            {/* right section */}
             <div className="flex items-center justify-end gap-4 md:gap-6 flex-1">
               {loading ? (
                 <div className="w-8 h-8 rounded-full bg-[#EAD7C3]/50 animate-pulse" />
@@ -108,7 +109,7 @@ export default function Navbar() {
                   <Link 
                     href="/dashboard/my-requests" 
                     title="Go to Dashboard"
-                    className="p-2 text-[#6D7C75] hover:bg-[#6D7C75]/10 rounded-full transition-colors"
+                    className="p-2 text-[#4E5C56] hover:bg-[#6D7C75]/10 rounded-full transition-colors"
                   >
                     <LayoutDashboard size={18} />
                   </Link>
@@ -129,7 +130,7 @@ export default function Navbar() {
 
                   <button 
                     onClick={handleLogout}
-                    className="p-2 text-[#6D7C75] hover:bg-[#6D7C75]/10 rounded-full transition-colors"
+                    className="p-2 text-[#4E5C56] hover:bg-[#6D7C75]/10 rounded-full transition-colors"
                     title="Logout Session"
                   >
                     <LogOut size={18} />
@@ -137,7 +138,7 @@ export default function Navbar() {
                 </div>
               ) : (
                 <div className="hidden md:flex items-center gap-6">
-                  <Link href="/login" className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#6D7C75]/80 hover:text-[#6D7C75]">
+                  <Link href="/login" className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#4E5C56] hover:text-[#6D7C75]">
                     Login
                   </Link>
                   <Link href="/register" className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#E7C78A] hover:text-[#6D7C75]">
@@ -148,7 +149,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Central Floating Logo */}
+          {/* Logo */}
           <AnimatePresence>
             {!isScrolled && (
               <motion.div 
@@ -187,17 +188,17 @@ export default function Navbar() {
             className="fixed inset-0 z-[200] bg-[#EAD7C3] flex flex-col p-8"
           >
             <div className="flex justify-between items-center mb-12">
-              <span className="text-[#6D7C75] font-black tracking-tighter text-2xl uppercase">
+              <span className="text-[#4E5C56] font-black tracking-tighter text-2xl uppercase">
                 PAWSKY<span className="text-white">WAWSKY</span>
               </span>
-              <button onClick={() => setMobileMenuOpen(false)} className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-[#6D7C75]">
+              <button onClick={() => setMobileMenuOpen(false)} className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-[#4E5C56]">
                 <X size={24} />
               </button>
             </div>
             
             <div className="flex flex-col gap-6">
               {leftLinks.map((link) => (
-                <Link key={link.name} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-4xl font-black uppercase text-[#6D7C75]">
+                <Link key={link.name} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-4xl font-black uppercase text-[#4E5C56]">
                   {link.name}
                 </Link>
               ))}
@@ -207,12 +208,12 @@ export default function Navbar() {
               {user ? (
                 <>
                   <Link href="/dashboard/my-requests" onClick={() => setMobileMenuOpen(false)} className="text-4xl font-black uppercase text-white italic">Dashboard</Link>
-                  <button onClick={handleLogout} className="text-left text-4xl font-black uppercase text-[#6D7C75]">Logout</button>
+                  <button onClick={handleLogout} className="text-left text-4xl font-black uppercase text-[#4E5C56]">Logout</button>
                 </>
               ) : (
                 <>
                   <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="text-4xl font-black uppercase text-white italic">Login</Link>
-                  <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="text-4xl font-black uppercase text-[#6D7C75]">Register</Link>
+                  <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="text-4xl font-black uppercase text-[#4E5C56]">Register</Link>
                 </>
               )}
             </div>
