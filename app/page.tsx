@@ -1,6 +1,7 @@
 'use client';
 
 import Hero from "./components/Hero";
+import Pets from "./components/our-gems";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
 
       {/* section components */}
       <Hero />  
+      <Pets />
 
     </main>
   );
