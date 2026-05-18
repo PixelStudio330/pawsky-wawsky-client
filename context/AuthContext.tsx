@@ -1,0 +1,77 @@
+'use client';
+
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import axios from 'axios';
+
+axios.defaults.withCredentials = true;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/auth';
+
+export interface User {
+  name: string;
+  email: string;
+  photoUrl: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  checkUserSession: () => Promise<void>;
+  login: (credentials: object) => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const checkUserSession = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/me`);
+      if (response.data.success && response.data.user) {
+        setUser({ ...response.data.user }); // ✨ Force a new object reference so React catches the change
+      } else {
+        setUser(null);
+      }
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    checkUserSession();
+  }, []);
+
+  const login = async (credentials: object) => {
+    const response = await axios.post(`${API_URL}/login`, credentials);
+    if (response.data.success && response.data.user) {
+      setUser({ ...response.data.user }); // ✨ Set state BEFORE navigating
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await axios.post(`${API_URL}/logout`);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUser(null);
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, loading, setUser, checkUserSession, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be nested within an AuthProvider");
+  return context;
+}

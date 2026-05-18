@@ -33,7 +33,6 @@ export default function Navbar() {
 
   return (
     <>
-    
       <nav className={`fixed left-0 right-0 z-[100] w-full transition-all duration-500 ease-in-out ${
         isScrolled ? "top-0 px-0" : "top-6 px-4 md:px-8"
       }`}>
@@ -114,19 +113,20 @@ export default function Navbar() {
                     <LayoutDashboard size={18} />
                   </Link>
 
-                  <div className="flex items-center gap-2 group cursor-pointer">
+                  {/* Clicking this profile block links straight to the profile edit page */}
+                  <Link href="/profile" className="flex items-center gap-2 group cursor-pointer">
                     <div className="text-right hidden lg:block">
                       <p className="text-[10px] font-black text-[#E7C78A] uppercase leading-none">Hello,</p>
                       <p className="text-[12px] font-bold text-slate-700 truncate max-w-[80px]">{user.name?.split(' ')[0]}</p>
                     </div>
-                    <div className="w-10 h-10 rounded-full border-2 border-[#E7C78A] overflow-hidden group-hover:scale-110 transition-transform bg-[#FDF6EC]">
+                    <div className="w-10 h-10 rounded-full border-2 border-[#E7C78A] overflow-hidden group-hover:scale-110 transition-transform bg-[#FDF6EC] relative">
                       <img 
-                        src={user.photoURL || "https://api.dicebear.com/7.x/adventurer/svg?seed=Nyra"} 
+                        src={user.photoUrl || "https://api.dicebear.com/7.x/adventurer/svg?seed=Nyra"} 
                         alt="User Profile Avatar" 
                         className="w-full h-full object-cover"
                       />
                     </div>
-                  </div>
+                  </Link>
 
                   <button 
                     onClick={handleLogout}
@@ -207,8 +207,11 @@ export default function Navbar() {
               
               {user ? (
                 <>
+                  <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="text-4xl font-black uppercase text-white italic">My Profile</Link>
                   <Link href="/dashboard/my-requests" onClick={() => setMobileMenuOpen(false)} className="text-4xl font-black uppercase text-white italic">Dashboard</Link>
-                  <button onClick={handleLogout} className="text-left text-4xl font-black uppercase text-[#4E5C56]">Logout</button>
+                  <button onClick={handleLogout} className="text-left text-4xl font-black uppercase text-[#4E5C56] flex items-center gap-2">
+                    Logout <LogOut size={28} />
+                  </button>
                 </>
               ) : (
                 <>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { Sparkles, MapPin, ArrowRight } from "lucide-react";
 
 interface IPet {
   _id: string;
@@ -18,9 +19,8 @@ interface IPet {
   description: string;
 }
 
-// Framer Motion Animation Configurations
 const cardVariants = {
-  hidden: { opacity: 0, y: 60, scale: 0.98 },
+  hidden: { opacity: 0, y: 50, scale: 0.99 },
   visible: { 
     opacity: 1, 
     y: 0, 
@@ -28,20 +28,20 @@ const cardVariants = {
     transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
   },
   hover: {
-    y: -12,
+    y: -10,
     scale: 1.015,
-    boxShadow: "0 30px 60px -15px rgba(220, 164, 164, 0.25)",
-    borderColor: "rgba(243, 198, 198, 0.7)",
-    transition: { duration: 0.4, ease: "easeOut" }
+    boxShadow: "0 40px 80px -25px rgba(90, 70, 70, 0.18)",
+    borderColor: "rgba(226, 147, 147, 0.6)",
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
   }
 };
 
 const imageBgVariants = (isEven: boolean) => ({
   initial: { rotate: isEven ? 3 : -3, scale: 1 },
   hover: { 
-    rotate: isEven ? -1 : 1, 
+    rotate: isEven ? -2 : 2, 
     scale: 1.03,
-    backgroundColor: "#E2B4B4", // Shifts to a deeper warm rose tone on hover
+    backgroundColor: "#DF9A9A",
     transition: { duration: 0.4, ease: "easeInOut" }
   }
 });
@@ -53,24 +53,25 @@ export default function OurGems() {
 
   const isUserLoggedIn = false; 
 
-  useEffect(() => {
-    const fetchGems = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/pets", {
-          cache: "no-store"
-        });
-        const json = await response.json();
-        if (json.success) {
-          setPets(json.data);
-        }
-      } catch (error) {
-        console.error("Error connecting to separate backend:", error);
-      } finally {
-        setLoading(false);
+useEffect(() => {
+  const fetchGems = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/pets", {
+        cache: "no-store"
+      });
+      const json = await response.json();
+      if (json.success) {
+        setPets(json.data);
       }
-    };
-    fetchGems();
-  }, []);
+    } catch (error) {
+      console.error("Error connecting to separate backend:", error);
+    } finally {
+      // 🌟 FIX: Change 'loading(false)' to 'setLoading(false)'
+      setLoading(false);
+    }
+  };
+  fetchGems();
+}, []);
 
   const handleAdoptClick = (e: React.MouseEvent, petId: string) => {
     e.stopPropagation(); 
@@ -83,13 +84,13 @@ export default function OurGems() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FFFDFB] flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-transparent">
         <div className="flex flex-col items-center gap-5">
-          <div className="relative w-16 h-16">
-            <div className="absolute inset-0 border-4 border-[#F3C6C6] rounded-full opacity-30" />
-            <div className="absolute inset-0 border-4 border-[#F0A8A8] border-t-transparent rounded-full animate-spin" />
+          <div className="relative w-14 h-14">
+            <div className="absolute inset-0 border-[3px] border-[#3C3232]/10 rounded-full" />
+            <div className="absolute inset-0 border-[3px] border-[#E29393] border-t-transparent rounded-full animate-spin" />
           </div>
-          <p className="text-[#8A6E6E] font-bold italic tracking-wide animate-pulse">
+          <p className="text-[#5A4E4E] text-xs font-black tracking-widest uppercase animate-pulse">
             polishing our precious gems... ✨
           </p>
         </div>
@@ -98,38 +99,38 @@ export default function OurGems() {
   }
 
   return (
-    <main className="relative min-h-screen bg-[#FFFDFB] text-[#5A4E4E] py-24 px-6 overflow-hidden">
+    <main className="relative min-h-screen text-[#5A4E4E] py-24 px-6 overflow-hidden bg-[#FFFFF7]">
       
-      {/* 🌸 Ambient Backdrop Art Layer */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
-        <div className="absolute top-20 right-12 text-6xl opacity-15 rotate-12 animate-bounce duration-[6s]">💎</div>
-        <div className="absolute bottom-40 left-12 text-5xl opacity-15 -rotate-12 animate-pulse">🌸</div>
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#FADCD5]/30 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] bg-[#E7C78A]/10 rounded-full blur-[140px]" />
+      {/* 🌸 Ambient Backdrop Soft Lighting—Pushed completely to back using negative z-index */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none -z-10">
+        <div className="absolute top-24 right-16 text-5xl opacity-20 rotate-12 animate-bounce duration-[7s]">💎</div>
+        <div className="absolute bottom-44 left-16 text-4xl opacity-20 -rotate-12 animate-pulse">🌸</div>
+        <div className="absolute top-1/4 left-1/4 w-[550px] h-[550px] bg-[#FADCD5]/40 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[650px] h-[650px] bg-[#F3E1C6]/30 rounded-full blur-[140px]" />
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, y: -25 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="text-center mb-24 relative z-10"
+        className="text-center mb-28 relative z-10"
       >
-        <span className="text-xs uppercase tracking-widest font-black text-[#F0A8A8] bg-[#FFF0F0] px-4 py-1.5 rounded-full shadow-sm">
+        <span className="text-[10px] uppercase tracking-widest font-black text-[#E29393] bg-[#FCFAF7] px-4 py-1.5 rounded-full border border-[#EADFC9] shadow-sm">
           Adoption Sanctuary
         </span>
-        <h1 className="text-5xl md:text-7xl font-black text-[#524444] mt-4 tracking-tight drop-shadow-sm">
-          Our Precious Gems <span className="text-[#F0A8A8]">💎</span>
+        <h1 className="text-4xl md:text-6xl font-black text-[#3C3232] mt-4 tracking-tight drop-shadow-sm">
+          Our Precious Gems <span className="text-[#E29393]">💎</span>
         </h1>
-        <p className="text-[#8A7979] mt-4 text-xl italic font-medium max-w-xl mx-auto">
+        <p className="text-[#6E5D5D] mt-3 text-lg italic font-medium max-w-xl mx-auto">
           Meet the beautiful souls that turn our small sanctuary into a cozy home.
         </p>
-        <div className="h-1.5 w-24 bg-gradient-to-r from-[#F0A8A8] to-[#E7C78A] mx-auto mt-6 rounded-full" />
+        <div className="h-[3px] w-16 bg-gradient-to-r from-[#E29393] to-[#DFB48F] mx-auto mt-5 rounded-full" />
       </motion.div>
 
-      <div className="flex flex-col gap-28 max-w-6xl mx-auto relative z-10 px-4">
+      <div className="flex flex-col gap-24 max-w-5xl mx-auto relative z-10 px-2">
         {pets.length === 0 ? (
-          <div className="text-center py-24 bg-white/60 border-4 border-dashed border-[#F3C6C6] rounded-[3rem] shadow-inner">
-            <p className="text-xl font-bold text-[#A69292] italic">The nursery is quiet right now. Check back soon! 🐾</p>
+          <div className="text-center py-20 bg-[#FCFAF7]/60 backdrop-blur-sm border-2 border-dashed border-[#D2BCA4] rounded-[2.5rem]">
+            <p className="text-sm font-black uppercase tracking-wider text-[#8A7979] italic">The nursery is quiet right now. Check back soon! 🐾</p>
           </div>
         ) : (
           pets.map((pet, i) => {
@@ -141,106 +142,103 @@ export default function OurGems() {
                 initial="hidden"
                 whileInView="visible"
                 whileHover="hover"
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: true, margin: "-80px" }}
                 onClick={() => router.push(`/our-gems/${pet._id}`)}
-                className={`bg-white rounded-[3.5rem] p-8 md:p-12 shadow-[0_15px_40px_rgba(90,78,78,0.06)] flex flex-col ${
+                className={`bg-[#FCFAF7]/90 backdrop-blur-md p-6 md:p-10 flex flex-col ${
                   isEven ? "lg:flex-row" : "lg:flex-row-reverse"
-                } items-center gap-12 border-4 border-white relative overflow-hidden cursor-pointer group transition-colors duration-500`}
+                } items-center gap-10 border-2 border-[#D2BCA4] relative overflow-hidden cursor-pointer group transition-all duration-300 rounded-[2.75rem_1.25rem_2.75rem_1.25rem]`}
               >
-                {/* 🎨 Subtle interior card glow overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#FFF5F5]/0 via-[#FFF5F5]/0 to-[#FFF5F5] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                {/* Folk-art aesthetic subtle corner accent overlays */}
+                <div className="absolute top-0 right-0 w-8 h-8 opacity-40 border-t-2 border-r-2 border-[#D2BCA4] rounded-tr-md pointer-events-none group-hover:opacity-100 transition-opacity" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 opacity-40 border-b-2 border-l-2 border-[#D2BCA4] rounded-bl-md pointer-events-none group-hover:opacity-100 transition-opacity" />
+
+                {/* Subtle interior card warm overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#FFFDFB]/0 via-[#FFFDFB]/0 to-[#FFF0F0]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                 {/* 📸 Image Frame Setup */}
-                <div className="w-full lg:w-[45%] relative">
+                <div className="w-full lg:w-[42%] relative flex-shrink-0">
                   <motion.div 
                     variants={imageBgVariants(isEven)}
                     initial="initial"
-                    className="absolute -inset-4 bg-[#F3C6C6] rounded-[3rem] shadow-sm z-0" 
+                    className="absolute -inset-2.5 bg-[#E2A6A6] rounded-[2rem_1rem_2rem_1rem] z-0 shadow-inner" 
                   />
                   
-                  <div className="relative overflow-hidden rounded-[2.2rem] shadow-xl border-4 border-white z-10">
+                  <div className="relative overflow-hidden rounded-[1.75rem_0.75rem_1.75rem_0.75rem] shadow-md border-[3px] border-[#FCFAF7] z-10">
                     <Image
                       src={pet.image}
                       alt={pet.name}
-                      width={550}
-                      height={450}
-                      className="w-full h-[390px] object-cover transition-transform duration-700 group-hover:scale-105"
+                      width={500}
+                      height={400}
+                      className="w-full h-[340px] object-cover transition-transform duration-700 ease-out group-hover:scale-102"
                       priority={i === 0}
                     />
                   </div>
 
-                  {/* Little absolute float icon charm */}
+                  {/* Absolute Floating Decorative Charm */}
                   <motion.div 
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                    className="absolute -bottom-6 -right-6 bg-white w-20 h-20 rounded-full shadow-lg flex items-center justify-center text-3xl z-20 border border-[#FFF0F0]"
+                    animate={{ y: [0, -4, 0] }}
+                    transition={{ repeat: Infinity, duration: 3.2, ease: "easeInOut" }}
+                    className="absolute -bottom-4 -right-4 bg-[#FCFAF7] w-14 h-14 rounded-2xl shadow-md flex items-center justify-center text-xl z-20 border-2 border-[#D2BCA4]"
                   >
                     🌸
                   </motion.div>
                 </div>
 
-                {/* 📝 Card Typography & Metadata Side */}
-                <div className="w-full lg:w-[55%] flex flex-col justify-between h-full py-2 z-10">
+                {/* 📝 Card Details Panel */}
+                <div className="w-full lg:w-[58%] flex flex-col justify-between self-stretch py-1 z-10">
                   <div>
-                    <div className="flex flex-wrap items-center gap-3 mb-5">
-                      <h2 className="text-4xl md:text-5xl font-black text-[#524444] tracking-tight transition-colors duration-300 group-hover:text-[#F0A8A8]">
+                    <div className="flex flex-wrap items-center gap-2.5 mb-4">
+                      <h2 className="text-3xl font-black text-[#3C3232] tracking-tight transition-colors duration-300 group-hover:text-[#E29393]">
                         {pet.name}
                       </h2>
-                      <span className="text-xs font-bold px-4 py-1.5 bg-[#FFF0F0] text-[#F0A8A8] rounded-full border border-[#FFE0E0]">
-                        {pet.age} old
+                      <span className="text-[10px] font-black tracking-wide px-3 py-1 bg-[#FFF0F0] text-[#E29393] rounded-full border border-[#FCD4D4]">
+                        {pet.age} Old
                       </span>
-                      <span className="text-[10px] uppercase font-black px-3 py-1 bg-[#FAF5E7] border border-[#E7C78A]/30 text-[#C9A68D] rounded-md tracking-wider">
+                      <span className="text-[9px] uppercase font-black px-2.5 py-1 bg-[#FAF5E7] border border-[#DFB48F]/40 text-[#A08068] rounded-md tracking-widest">
                         {pet.species}
                       </span>
                     </div>
                     
-                    <p className="text-[#8A7979] leading-relaxed text-base line-clamp-3 mb-6 font-medium">
-                      {pet.description}
+                    <p className="text-[#6E5D5D] leading-relaxed text-sm line-clamp-3 mb-6 font-medium italic">
+                      "{pet.description}"
                     </p>
 
                     {/* Styled Pill Badge Clusters */}
-                    <div className="flex flex-wrap gap-2.5 mb-8">
-                      <span className="text-xs font-semibold px-3.5 py-2 bg-[#FFF8F6] border border-[#FDF0EC] rounded-2xl text-[#8A6E6E] shadow-sm">
-                        🎀 <span className="text-[#5A4E4E] font-bold ml-1">Breed:</span> {pet.breed}
+                    <div className="flex flex-wrap gap-2 border-t border-b border-dashed border-[#D2BCA4] py-4 mb-6">
+                      <span className="text-[11px] font-bold px-3 py-1.5 bg-white/50 border border-[#EADFC9] rounded-xl text-[#5A4E4E] shadow-sm">
+                        🎀 <span className="text-[#8A7979] font-medium ml-1">Breed:</span> {pet.breed}
                       </span>
-                      <span className="text-xs font-semibold px-3.5 py-2 bg-[#FFF8F6] border border-[#FDF0EC] rounded-2xl text-[#8A6E6E] shadow-sm">
-                        ✨ <span className="text-[#5A4E4E] font-bold ml-1">Gender:</span> {pet.gender}
+                      <span className="text-[11px] font-bold px-3 py-1.5 bg-white/50 border border-[#EADFC9] rounded-xl text-[#5A4E4E] shadow-sm">
+                        ✨ <span className="text-[#8A7979] font-medium ml-1">Gender:</span> {pet.gender}
                       </span>
-                      <span className="text-xs font-semibold px-3.5 py-2 bg-[#FAF9F6] border border-[#F5F4EE] rounded-2xl text-[#8A7979] shadow-sm">
-                        📍 {pet.location}
+                      <span className="text-[11px] font-bold px-3 py-1.5 bg-white/50 border border-[#EADFC9] rounded-xl text-[#5A4E4E] shadow-sm flex items-center gap-1">
+                        <MapPin size={12} className="text-[#E29393]" /> {pet.location}
                       </span>
                     </div>
                   </div>
 
-                  {/* Clean Dynamic Footer Row Action Dock */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 pt-5 border-t border-[#FFF2F2] mt-auto">
+                  {/* Clean Dynamic Action Bar */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3 mt-auto">
                     <div>
-                      <p className="text-[10px] uppercase tracking-widest font-black text-[#C6B6B6]">Adoption Fee</p>
-                      <p className="text-2xl font-black text-[#F0A8A8] mt-0.5 tracking-tight">
-                        {pet.adoptionFee === 0 ? "Free Adoption! 🎁" : `$${pet.adoptionFee}`}
+                      <p className="text-[9px] uppercase tracking-widest font-black text-[#A89898]">Adoption Contribution</p>
+                      <p className="text-xl font-black text-[#E29393] tracking-tight">
+                        {pet.adoptionFee === 0 ? "Gifted Adoption! 🎁" : `$${pet.adoptionFee}`}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
-                      {/* Animated text link block with sliding dynamic arrow variants */}
-                      <span className="text-[#8A7979] font-black text-sm tracking-wide transition-colors duration-300 flex items-center gap-2 pl-2 group-hover:text-[#F0A8A8]">
-                        Read Full Bio
-                        <motion.span 
-                          animate={{ x: [0, 5, 0] }} 
-                          transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
-                          className="inline-block"
-                        >
-                          👉
-                        </motion.span>
+                    <div className="flex items-center gap-5 w-full sm:w-auto justify-between sm:justify-end">
+                      <span className="text-[#6E5D5D] font-black text-xs tracking-wider uppercase transition-colors duration-300 flex items-center gap-1.5 group-hover:text-[#E29393]">
+                        Read Bio
+                        <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
                       </span>
 
                       <motion.button
-                        whileHover={{ scale: 1.05, backgroundColor: "#E2B4B4" }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.03, backgroundColor: "#3F5947" }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={(e) => handleAdoptClick(e, pet._id)}
-                        className="px-7 py-3.5 bg-[#F0A8A8] text-white rounded-full font-black shadow-[0_10px_25px_rgba(240,168,168,0.4)] transition-all duration-300 text-xs tracking-wider uppercase"
+                        className="px-6 py-3 bg-[#4E6E58] text-[#FCFAF7] rounded-xl font-black shadow-[0_4px_15px_rgba(78,110,88,0.2)] transition-all duration-300 text-[10px] tracking-widest uppercase flex items-center gap-1"
                       >
-                        Adopt Now! ✨
+                        Adopt Now <Sparkles size={11} />
                       </motion.button>
                     </div>
                   </div>
@@ -252,8 +250,8 @@ export default function OurGems() {
         )}
       </div>
 
-      <footer className="mt-36 text-center text-[#BAAFAF]">
-        <p className="text-sm italic font-medium tracking-wide">Every gem deserves a crown. Every pet deserves a home. ✨</p>
+      <footer className="mt-36 text-center text-[#8A7979]/70">
+        <p className="text-xs italic font-semibold tracking-widest uppercase">Every gem deserves a crown. Every pet deserves a home. ✨</p>
       </footer>
     </main>
   );

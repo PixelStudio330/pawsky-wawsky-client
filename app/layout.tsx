@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Providers from "./components/Providers";
+import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 
@@ -26,11 +27,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
-          <Navbar />
-          {children}
-        </Providers>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-[#EAD7C3] relative`}
+      >
+        {/* Global Cozy Cozy-Web Grid - Fixed & Pointer-Events-None so it stays strictly background */}
+        <div 
+          className="fixed inset-0 opacity-[0.06] pointer-events-none z-0 bg-[linear-gradient(to_right,#3C3232_1px,transparent_1px),linear-gradient(to_bottom,#3C3232_1px,transparent_1px)] bg-[size:28px_28px]" 
+        />
+        
+        <AuthProvider>
+          <Providers>
+            {/* Kept as a relative block so page content properly layers over the baseline grid */}
+            <div className="relative z-10 min-h-screen flex flex-col">
+              <Navbar />
+              <div className="flex-1">
+                {children}
+              </div>
+            </div>
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );
