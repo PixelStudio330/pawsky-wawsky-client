@@ -33,6 +33,9 @@ export default function Hero() {
   return (
     <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-[#EAD7C3] pt-32 pb-36 md:pt-44 md:pb-44 lg:pb-52 flex items-center overflow-hidden min-h-[640px] md:h-screen max-h-[850px] z-10 m-0 p-0">
       
+      {/* 🏁 Checkered Texture Background for the Hero Area */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#EADFC9_1px,transparent_1px),linear-gradient(to_bottom,#EADFC9_1px,transparent_1px)] bg-[size:24px_24px] opacity-[0.15] pointer-events-none z-0" />
+
       {/* BACKGROUND LAYER 1 - ANIMALS */}
       <div className="absolute inset-0 w-full h-full select-none pointer-events-none z-0">
         <Image
@@ -71,7 +74,7 @@ export default function Hero() {
         />
       </motion.div>
 
-      {/* 🌸 LUXE GRADIENT MASK FADE (Blends background smoothly out towards the right & bottom) */}
+      {/* 🌸 LUXE GRADIENT MASK FADE */}
       <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-[#EAD7C3]/10 via-[#FFFDFB]/30 to-[#FFFDFB]/60 pointer-events-none z-15" />
 
       {/* HERO CONTENT AREA */}
@@ -155,16 +158,31 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* SVG Curve - STRICT CRISP FOREGROUND FIX */}
+      {/* SVG Curve - CRISP FOREGROUND WITH CHECKERED FILL PATTERN */}
       <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] transform translate-y-[2px] z-40 select-none pointer-events-none">
         <svg 
           viewBox="0 0 1200 120" 
           preserveAspectRatio="none" 
           className="relative block w-full h-[45px] md:h-[80px] lg:h-[110px]"
         >
+          <defs>
+            {/* Custom 24x24 linear grid definition inside the SVG scope */}
+            <pattern id="curveCheckeredGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+              <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#EADFC9" strokeWidth="1" />
+            </pattern>
+          </defs>
+
+          {/* Base Background block color */}
           <path 
             d="M0,0 C150,90 350,120 600,120 C850,120 1050,90 1200,0 L1200,120 L0,120 Z" 
             fill="#FFFDFB" 
+          />
+
+          {/* Superimposed Checkered Pattern Overlay (Limited strictly inside the vector curve bounds) */}
+          <path 
+            d="M0,0 C150,90 350,120 600,120 C850,120 1050,90 1200,0 L1200,120 L0,120 Z" 
+            fill="url(#curveCheckeredGrid)"
+            opacity="0.24" 
           />
         </svg>
       </div>

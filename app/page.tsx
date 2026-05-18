@@ -1,11 +1,34 @@
 'use client';
 
+import { useEffect } from "react";
 import Hero from "./components/Hero";
 import Pets from "./components/our-gems";
 
 export default function Home() {
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#pet-')) {
+      let attempts = 0;
+      
+      // Poll the DOM until the asynchronous backend list populates the targeted card frame
+      const scrollInterval = setInterval(() => {
+        const targetCard = document.querySelector(hash);
+        attempts++;
+
+        if (targetCard) {
+          targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+          clearInterval(scrollInterval);
+        } else if (attempts > 30) { 
+          // Stop checking after 3 seconds if data fails to connect
+          clearInterval(scrollInterval);
+        }
+      }, 100);
+
+      return () => clearInterval(scrollInterval);
+    }
+  }, []);
+
   return (
-   
     <main className="relative min-h-screen bg-[#FDF6EC] text-[#5C6B64] w-full overflow-x-hidden">
       
       {/* Decorative Background Elements */}
@@ -17,7 +40,11 @@ export default function Home() {
 
       {/* section components */}
       <Hero />  
-      <Pets />
+      
+      {/* Dynamic target cards container */}
+      <div>
+        <Pets />
+      </div>
 
     </main>
   );
