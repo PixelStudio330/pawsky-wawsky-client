@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Sparkles, MapPin, ArrowRight } from "lucide-react";
+import { Sparkles, MapPin, ArrowRight, Search, SlidersHorizontal, Sparkle } from "lucide-react";
 
 interface IPet {
   _id: string;
@@ -65,7 +65,10 @@ const charmVariants = {
 
 export default function OurGems() {
   const [pets, setPets] = useState<IPet[]>([]);
+  const [filteredPets, setFilteredPets] = useState<IPet[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedSpecies, setSelectedSpecies] = useState<string>("All");
   const router = useRouter();
 
   const isUserLoggedIn = false; 
@@ -79,6 +82,7 @@ export default function OurGems() {
         const json = await response.json();
         if (json.success) {
           setPets(json.data);
+          setFilteredPets(json.data); // Initialize the render stack
         }
       } catch (error) {
         console.error("Error connecting to separate backend:", error);
@@ -89,6 +93,24 @@ export default function OurGems() {
     fetchGems();
   }, []);
 
+  // Filter Logic execution whenever queries or baseline lists change
+  useEffect(() => {
+    const results = pets.filter((pet) => {
+      const matchesSearch = 
+        pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        pet.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        pet.species.toLowerCase().includes(searchQuery.toLowerCase());
+        
+      const matchesSpecies = 
+        selectedSpecies === "All" || 
+        pet.species.toLowerCase() === selectedSpecies.toLowerCase();
+
+      return matchesSearch && matchesSpecies;
+    });
+    
+    setFilteredPets(results);
+  }, [searchQuery, selectedSpecies, pets]);
+
   const handleAdoptClick = (e: React.MouseEvent, petId: string) => {
     e.stopPropagation(); 
     if (!isUserLoggedIn) {
@@ -97,6 +119,9 @@ export default function OurGems() {
       router.push(`/our-gems/${petId}?adopt=true`);
     }
   };
+
+  // Get distinct lists of species values safely for quick tag pills
+  const uniqueSpecies = ["All", ...Array.from(new Set(pets.map(p => p.species)))];
 
   if (loading) {
     return (
@@ -133,7 +158,7 @@ export default function OurGems() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", stiffness: 100, damping: 15 }}
-        className="text-center mb-24 md:mb-32 relative z-10"
+        className="text-center mb-16 relative z-10"
       >
         <span className="inline-block text-[10px] uppercase tracking-widest font-black text-[#E29393] bg-white px-5 py-2 rounded-full border-2 border-[#EADFC9] shadow-sm">
           Adoption Sanctuary ✨
@@ -147,13 +172,66 @@ export default function OurGems() {
         <div className="h-[4px] w-20 bg-gradient-to-r from-[#E29393] via-[#E7C78A] to-[#DFB48F] mx-auto mt-6 rounded-full shadow-sm" />
       </motion.div>
 
-      <div className="flex flex-col gap-20 md:gap-28 max-w-5xl mx-auto relative z-10">
-        {pets.length === 0 ? (
-          <div className="text-center py-20 px-4 bg-white/80 backdrop-blur-sm border-4 border-dashed border-[#D2BCA4] rounded-[2.5rem] shadow-sm">
-            <p className="text-xs md:text-sm font-black uppercase tracking-widest text-[#8A7979] italic">The nursery is quiet right now. Check back soon! 🐾</p>
+      {/* --- Search and Filtering Control Hub --- */}
+      <div className="max-w-xl mx-auto mb-20 relative z-10 px-2">
+        <div className="relative group bg-white border-3 border-[#D2BCA4] rounded-2xl p-1.5 flex items-center shadow-md transition-all duration-300 focus-within:border-[#E29393] focus-within:shadow-xl">
+          <div className="pl-4 text-[#A89898] group-focus-within:text-[#E29393] transition-colors">
+            <Search size={18} strokeWidth={2.5} />
           </div>
+          <input 
+            type="text" 
+            placeholder="Search gems by name, breed, or species..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-transparent border-0 outline-none px-3 py-2.5 text-sm font-bold text-[#3C3232] placeholder-[#C4B4B4]"
+          />
+        </div>
+
+        {/* Dynamic Interactive Filter Pills */}
+        {pets.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+            {uniqueSpecies.map((species) => (
+              <button
+                key={species}
+                onClick={() => setSelectedSpecies(species)}
+                className={`text-[10px] uppercase font-black tracking-widest px-4 py-2 rounded-xl transition-all duration-300 border-2 ${
+                  (selectedSpecies === species)
+                    ? "bg-[#E29393] border-[#E29393] text-white shadow-sm"
+                    : "bg-white border-[#EADFC9] text-[#8A7979] hover:border-[#DFB48F]"
+                }`}
+              >
+                {species}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* --- Gems Cards Grid / Container Layout --- */}
+      <div className="flex flex-col gap-20 md:gap-28 max-w-5xl mx-auto relative z-10">
+        {filteredPets.length === 0 ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-24 px-4 bg-white/80 backdrop-blur-sm border-4 border-dashed border-[#D2BCA4] rounded-[2.5rem] shadow-sm max-w-2xl mx-auto w-full"
+          >
+            <p className="text-3xl mb-4">🐾</p>
+            <p className="text-sm font-black uppercase tracking-widest text-[#8A7979] italic">
+              {pets.length === 0 
+                ? "The nursery is quiet right now. Check back soon!" 
+                : "No precious gems match your search context."}
+            </p>
+            {pets.length > 0 && (
+              <button 
+                onClick={() => { setSearchQuery(""); setSelectedSpecies("All"); }}
+                className="mt-5 text-[10px] tracking-widest uppercase font-black bg-[#FCFAF2] border-2 border-[#DFB48F]/50 text-[#A08068] px-4 py-2 rounded-lg hover:bg-white transition-all"
+              >
+                Clear Filters ✨
+              </button>
+            )}
+          </motion.div>
         ) : (
-          pets.map((pet, i) => {
+          filteredPets.map((pet, i) => {
             const isEven = i % 2 === 0;
             return (
               <motion.section
