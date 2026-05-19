@@ -79,7 +79,7 @@ export default function SuccessStories() {
     <section 
       ref={containerRef} 
       onMouseMove={handleMouseMove}
-      className="relative min-h-screen py-24 sm:py-32 px-4 sm:px-6 bg-[#FFFFF7] overflow-hidden text-[#5A4E4E] select-none"
+      className="relative min-h-screen py-10 sm:py-32 px-4 sm:px-6 bg-[#FFFFF7] overflow-hidden text-[#5A4E4E] select-none"
     >
       {/* 🏁 Checkered Texture Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#EADFC9_1px,transparent_1px),linear-gradient(to_bottom,#EADFC9_1px,transparent_1px)] bg-[size:24px_24px] opacity-[0.24] pointer-events-none z-0" />
