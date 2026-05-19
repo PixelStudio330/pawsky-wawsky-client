@@ -1,7 +1,6 @@
 'use client';
 
 import Image from "next/image";
-import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 
 export default function Hero() {
@@ -30,11 +29,23 @@ export default function Hero() {
     },
   };
 
+  // Smooth scroll handler to seamlessly transition down to the target pet card
+  const handleScrollToPet = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const targetElement = document.getElementById("pet-6a0b02ada58270408a4455e6");
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center", // brings it to the sweet spot of the screen view
+      });
+    }
+  };
+
   return (
-    <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-[#EAD7C3] pt-32 pb-36 md:pt-44 md:pb-44 lg:pb-52 flex items-center overflow-hidden min-h-[640px] md:h-screen max-h-[850px] z-10 m-0 p-0">
+    <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-[#FFFFF7] pt-32 pb-36 md:pt-44 md:pb-44 lg:pb-52 flex items-center overflow-hidden min-h-[640px] md:h-screen max-h-[850px] z-10 m-0 p-0">
       
-      {/* 🏁 Checkered Texture Background for the Hero Area */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#EADFC9_1px,transparent_1px),linear-gradient(to_bottom,#EADFC9_1px,transparent_1px)] bg-[size:24px_24px] opacity-[0.15] pointer-events-none z-0" />
+      {/* 🏁 Standardized Unified Cozy Checkered Texture */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#EADFC9_1px,transparent_1px),linear-gradient(to_bottom,#EADFC9_1px,transparent_1px)] bg-[size:24px_24px] opacity-[0.24] pointer-events-none z-0" />
 
       {/* BACKGROUND LAYER 1 - ANIMALS */}
       <div className="absolute inset-0 w-full h-full select-none pointer-events-none z-0">
@@ -92,7 +103,7 @@ export default function Hero() {
             {/* Rating Note */}
             <motion.div 
               variants={itemVariants}
-              className="inline-flex items-center gap-2 mb-6 text-[10px] md:text-xs font-black tracking-wider text-[#A67C52] uppercase bg-[#FFF0ED]/90 backdrop-blur-sm px-4 py-1.5 rounded-full border-2 border-[#EAD7C3] shadow-sm select-none"
+              className="inline-flex items-center gap-2 mb-6 text-[10px] md:text-xs font-black tracking-wider text-[#A67C52] uppercase bg-[#FFF0ED]/90 backdrop-blur-sm px-4 py-1.5 rounded-full border-2 border-[#EADFC9] shadow-sm select-none"
             >
               <span className="text-[#E7C78A] animate-pulse">★★★★★</span>
               <span>5.0 Top Rated Adoption Hub</span>
@@ -104,7 +115,7 @@ export default function Hero() {
               className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-black text-[#3E4D44] tracking-tight mb-8 leading-[1.25] select-none"
             >
               Welcome to <br />
-              <span className="relative inline-block bg-[#FFF0ED] text-[#3E4D44] px-5 sm:px-6 py-2 rounded-[2rem] border-4 border-[#EAD7C3] shadow-[0_8px_24px_rgba(234,215,195,0.5)] cursor-default group hover:scale-105 active:scale-98 transition-transform duration-300 whitespace-nowrap mt-2">
+              <span className="relative inline-block bg-[#FFF0ED] text-[#3E4D44] px-5 sm:px-6 py-2 rounded-[2rem] border-4 border-[#EADFC9] shadow-[0_8px_24px_rgba(234,215,195,0.5)] cursor-default group hover:scale-105 active:scale-98 transition-transform duration-300 whitespace-nowrap mt-2">
                 <span className="bg-gradient-to-r from-[#3E4D44] via-[#F0A8A8] to-[#3E4D44] bg-[length:200%_auto] animate-[gradient-x_8s_ease_infinite] bg-clip-text text-transparent">
                   Pawsky Wawsky
                 </span>
@@ -120,12 +131,12 @@ export default function Hero() {
             
             {/* CTA Button Block */}
             <motion.div variants={itemVariants} className="flex items-center gap-4 relative z-30">
-              <Link
-                href="/our-gems"
+              <button
+                onClick={handleScrollToPet}
                 className="group/btn relative inline-flex items-center justify-center px-8 py-4 bg-[#3E4D44] text-white text-base font-black rounded-2xl shadow-[0_10px_28px_-5px_rgba(62,77,68,0.45),0_4px_0px_#2B3630] overflow-hidden transition-all duration-300 hover:shadow-[0_18px_35px_-5px_rgba(62,77,68,0.5),0_4px_0px_#2B3630] hover:scale-[1.03] active:translate-y-[3px] active:shadow-[0_2px_0px_#2B3630]"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Meet Our Babies! 
+                  Adopt Now! 
                   <motion.span 
                     animate={{ rotate: [0, -15, 15, -15, 0] }}
                     transition={{ repeat: Infinity, duration: 2, repeatDelay: 1.5 }}
@@ -135,7 +146,7 @@ export default function Hero() {
                   </motion.span>
                 </span>
                 <div className="absolute inset-0 bg-[#F0A8A8] opacity-0 group-hover/btn:opacity-100 translate-y-full group-hover/btn:translate-y-0 transition-all duration-500 ease-out" />
-              </Link>
+              </button>
             </motion.div>
           </motion.div>
 
@@ -158,7 +169,7 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* SVG Curve - CRISP FOREGROUND WITH CHECKERED FILL PATTERN */}
+      {/* SVG Curve - CRISP FOREGROUND WITH MATCHING CHECKERED FILL PATTERN */}
       <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] transform translate-y-[2px] z-40 select-none pointer-events-none">
         <svg 
           viewBox="0 0 1200 120" 
@@ -166,7 +177,6 @@ export default function Hero() {
           className="relative block w-full h-[45px] md:h-[80px] lg:h-[110px]"
         >
           <defs>
-            {/* Custom 24x24 linear grid definition inside the SVG scope */}
             <pattern id="curveCheckeredGrid" width="24" height="24" patternUnits="userSpaceOnUse">
               <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#EADFC9" strokeWidth="1" />
             </pattern>
@@ -175,10 +185,10 @@ export default function Hero() {
           {/* Base Background block color */}
           <path 
             d="M0,0 C150,90 350,120 600,120 C850,120 1050,90 1200,0 L1200,120 L0,120 Z" 
-            fill="#FFFDFB" 
+            fill="#FFFFF7" 
           />
 
-          {/* Superimposed Checkered Pattern Overlay (Limited strictly inside the vector curve bounds) */}
+          {/* Superimposed Checkered Pattern Overlay */}
           <path 
             d="M0,0 C150,90 350,120 600,120 C850,120 1050,90 1200,0 L1200,120 L0,120 Z" 
             fill="url(#curveCheckeredGrid)"

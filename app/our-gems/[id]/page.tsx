@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation"; 
 import { useAuth } from "../../context/AuthContext"; 
+import toast from "react-hot-toast"; // Imported react-hot-toast
 
 interface IPet {
   _id: string;
@@ -22,9 +23,24 @@ interface IPet {
   ownerEmail: string;
 }
 
+// Reusable cozy toast styling configuration
+const cozyToastStyle = {
+  style: {
+    background: '#FFFDF9',
+    color: '#4E5C56',
+    border: '1px solid #EAD7C3',
+    borderRadius: '1rem',
+    fontSize: '14px',
+    fontWeight: '600',
+    fontFamily: 'inherit',
+    boxShadow: '0 10px 25px -5px rgba(78, 92, 86, 0.08)',
+  },
+};
+
 export default function PetDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams(); 
   
   const { user, loading: authLoading } = useAuth();
   
@@ -44,9 +60,12 @@ export default function PetDetailsPage() {
         const json = await res.json();
         if (json.success) {
           setPet(json.data);
+        } else {
+          toast.error("Could not find this pet's profile 🐾", cozyToastStyle);
         }
       } catch (error) {
         console.error("Error reading pet entity record:", error);
+        toast.error("Network hiccup! Failed to load pet details.", cozyToastStyle);
       } finally {
         setLoading(false);
       }
@@ -54,6 +73,12 @@ export default function PetDetailsPage() {
 
     if (id) fetchPetDetails();
   }, [id]);
+
+  useEffect(() => {
+    if (!loading && !authLoading && user && searchParams.get("adopt") === "true" && !isOwner) {
+      setShowModal(true);
+    }
+  }, [loading, authLoading, user, searchParams, isOwner]);
 
   const handleAdoptionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,23 +94,40 @@ export default function PetDetailsPage() {
       status: "pending" 
     };
 
-    try {
-      const res = await fetch("http://localhost:5000/api/adoptions", {
+    // Using toast.promise for a smooth, interactive loading state during submit
+    await toast.promise(
+      fetch("http://localhost:5000/api/adoptions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(applicationPayload),
-      });
-
-      const json = await res.json();
-
-      if (json.success) {
+      }).then(async (res) => {
+        const json = await res.json();
+        if (!json.success) throw new Error(json.message || "Failed");
+        
         setShowModal(false);
-        router.push("/my-requests"); 
-      }
-    } catch (err) {
-      console.error("Submission pipeline block:", err);
+        router.push("/my-requests");
+        return json;
+      }),
+      {
+        loading: 'Sending application over to the sanctuary... 🕊️',
+        success: `Application submitted! Best of luck with ${pet?.name || 'your choice'}! ✨`,
+        error: 'Pipeline block: Could not submit application. 🐾',
+      },
+      cozyToastStyle
+    );
+  };
+
+  const handleAdoptButtonAction = () => {
+    if (!user) {
+      toast("Please sign in to start your adoption journey! 👉👈", {
+        icon: "🔒",
+        ...cozyToastStyle
+      });
+      router.push("/login");
+    } else {
+      setShowModal(true);
     }
   };
 
@@ -118,7 +160,6 @@ export default function PetDetailsPage() {
 
   return (
     <main className="relative min-h-screen bg-[#FDF6EC] text-[#5C6B64] py-12 md:py-20 px-4 sm:px-6 md:px-8 overflow-x-hidden">
-      
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#EAD7C3_1px,transparent_1px),linear-gradient(to_bottom,#EAD7C3_1px,transparent_1px)] bg-[size:24px_24px] opacity-[0.22] pointer-events-none z-0" />
 
       <div className="absolute inset-0 pointer-events-none z-0 opacity-50">
@@ -127,16 +168,15 @@ export default function PetDetailsPage() {
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
-        
-        <button 
-          onClick={() => router.push(`/#pet-${pet._id}`)} 
-          className="mb-6 md:mb-10 flex items-center gap-2 text-xs md:text-sm font-black uppercase tracking-wider text-[#6D7C75] hover:text-[#E29393] transition-colors pt-16 md:pt-24"
-        >
-          ← Back to All Precious Gems
-        </button>
+        {/* Around line 191 in PetDetailsPage */}
+<button 
+  onClick={() => router.replace(`/#pet-${pet._id}`)} 
+  className="mb-6 md:mb-10 flex items-center gap-2 text-xs md:text-sm font-black uppercase tracking-wider text-[#6D7C75] hover:text-[#E29393] transition-colors pt-16 md:pt-24"
+>
+  ← Back to All Precious Gems
+</button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -202,7 +242,7 @@ export default function PetDetailsPage() {
             </div>
 
             <div className="mt-8 md:mt-10">
-              {isOwner ? (
+              ={isOwner ? (
                 <div className="p-4 bg-[#FDF1F1] border border-[#F0A8A8]/30 rounded-xl text-center text-xs md:text-sm text-[#E29393] font-bold">
                   🔒 You own this sanctuary listing. Manage adoption requests for this pet inside your account dashboard.
                 </div>
@@ -210,14 +250,13 @@ export default function PetDetailsPage() {
                 <motion.button
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  onClick={() => setShowModal(true)}
+                  onClick={handleAdoptButtonAction}
                   className="w-full py-3.5 md:py-4 bg-[#6D7C75] text-white font-black text-sm uppercase tracking-widest rounded-xl shadow-md hover:bg-[#E29393] transition-all duration-300"
                 >
                   Adopt Now 💌
                 </motion.button>
               )}
             </div>
-
           </motion.div>
         </div>
       </div>
@@ -272,39 +311,36 @@ export default function PetDetailsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black uppercase text-[#4E5C56] mb-1 tracking-wider">Message 💭</label>
+                  <label className="block text-[10px] font-black uppercase text-[#4E5C56] mb-1 tracking-wider">Warm Greeting Message 💬</label>
                   <textarea 
                     rows={3}
-                    required
-                    placeholder="Introduce yourself to the pet caretaker, current housing situation..."
+                    placeholder="Tell the shelter manager a bit about your cozy home setup..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    className="w-full p-3 border border-[#EAD7C3]/60 rounded-lg text-xs md:text-sm text-[#5C6B64] font-medium bg-white focus:outline-none focus:border-[#F0A8A8] transition-colors placeholder:text-slate-300 resize-none"
+                    className="w-full p-3 border border-[#EAD7C3]/60 rounded-lg text-xs md:text-sm text-[#5C6B64] font-medium bg-white focus:outline-none focus:border-[#F0A8A8] transition-colors resize-none placeholder:text-slate-300"
                   />
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-2">
                   <button 
                     type="button" 
                     onClick={() => setShowModal(false)}
-                    className="w-1/3 py-3 border border-[#EAD7C3] text-slate-400 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-slate-50 transition-colors"
+                    className="flex-1 py-3 bg-slate-100 text-slate-500 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-slate-200 transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit"
-                    className="w-2/3 py-3 bg-[#6D7C75] text-white font-black text-xs uppercase tracking-widest rounded-xl hover:bg-[#E29393] shadow-sm transition-colors"
+                    className="flex-1 py-3 bg-[#6D7C75] text-white rounded-xl font-black text-xs uppercase tracking-wider hover:bg-[#E29393] transition-colors shadow-sm"
                   >
-                    Submit Application ✨
+                    Submit File 🕊️
                   </button>
                 </div>
-
               </form>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-
     </main>
   );
 }

@@ -4,6 +4,7 @@ import Providers from "./components/Providers";
 import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import { Toaster } from 'react-hot-toast';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,18 +31,25 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-[#EAD7C3] relative`}
       >
-        {/* Global Cozy Cozy-Web Grid - Fixed & Pointer-Events-None so it stays strictly background */}
+        {/* Forces the browser to hand scroll restoration duties fully back to Next.js */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }`
+          }}
+        />
+
+        {/* Global Cozy Cozy-Web Grid */}
         <div 
           className="fixed inset-0 opacity-[0.06] pointer-events-none z-0 bg-[linear-gradient(to_right,#3C3232_1px,transparent_1px),linear-gradient(to_bottom,#3C3232_1px,transparent_1px)] bg-[size:28px_28px]" 
         />
         
         <AuthProvider>
           <Providers>
-            {/* Kept as a relative block so page content properly layers over the baseline grid */}
             <div className="relative z-10 min-h-screen flex flex-col">
               <Navbar />
               <div className="flex-1">
                 {children}
+                <Toaster position="top-center" reverseOrder={false} />
               </div>
             </div>
           </Providers>

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Hero from "./components/Hero";
 import Pets from "./components/our-gems";
+import WhyAdopt from "./components/WhyAdopt";
 
 export default function Home() {
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function Home() {
       {/* Dynamic target cards container */}
       <div>
         <Pets />
+        <WhyAdopt />
       </div>
 
     </main>

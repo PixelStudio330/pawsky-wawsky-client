@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Sparkles, MapPin, ArrowRight, Search, SlidersHorizontal, Sparkle } from "lucide-react";
+import { useAuth } from "../../context/AuthContext"; 
+import { Sparkles, MapPin, ArrowRight, Search, Sun } from "lucide-react";
 
 interface IPet {
   _id: string;
@@ -69,10 +70,31 @@ export default function OurGems() {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedSpecies, setSelectedSpecies] = useState<string>("All");
+  
+  const mainRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { user } = useAuth();
 
-  const isUserLoggedIn = false; 
+  // Interactive cursor aura tracking
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
+  const springX = useSpring(mouseX, { stiffness: 60, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 60, damping: 20 });
+
+  const auraTranslateX = useTransform(springX, (val) => `${val * 0.04}px`);
+  const auraTranslateY = useTransform(springY, (val) => `${val * 0.04}px`);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!mainRef.current) return;
+    const { left, top, width, height } = mainRef.current.getBoundingClientRect();
+    const x = e.clientX - left - width / 2;
+    const y = e.clientY - top - height / 2;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  // 1. Fetching logic
   useEffect(() => {
     const fetchGems = async () => {
       try {
@@ -82,7 +104,7 @@ export default function OurGems() {
         const json = await response.json();
         if (json.success) {
           setPets(json.data);
-          setFilteredPets(json.data); // Initialize the render stack
+          setFilteredPets(json.data); 
         }
       } catch (error) {
         console.error("Error connecting to separate backend:", error);
@@ -93,7 +115,36 @@ export default function OurGems() {
     fetchGems();
   }, []);
 
-  // Filter Logic execution whenever queries or baseline lists change
+// 2. Client-side Post-Hydration Hash Scroller & 3s URL Vanishing Act
+useEffect(() => {
+  if (!loading && typeof window !== "undefined" && window.location.hash) {
+    const hashId = window.location.hash.substring(1); 
+    const targetElement = document.getElementById(hashId);
+    
+    // 1. Smoothly scroll to the target element
+    if (targetElement) {
+      setTimeout(() => {
+        targetElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 100);
+    }
+
+    // 2. Wait 3 seconds, then vanish the id code from the URL bar cleanly
+    const vanishTimer = setTimeout(() => {
+      // Replaces the URL fragment without reloading the components or pushing to history stack
+      window.history.replaceState(
+        null, 
+        document.title, 
+        window.location.pathname + window.location.search
+      );
+    }, 500);
+
+    return () => clearTimeout(vanishTimer);
+  }
+}, [loading]);
+
   useEffect(() => {
     const results = pets.filter((pet) => {
       const matchesSearch = 
@@ -113,14 +164,13 @@ export default function OurGems() {
 
   const handleAdoptClick = (e: React.MouseEvent, petId: string) => {
     e.stopPropagation(); 
-    if (!isUserLoggedIn) {
+    if (!user) {
       router.push("/login");
     } else {
       router.push(`/our-gems/${petId}?adopt=true`);
     }
   };
 
-  // Get distinct lists of species values safely for quick tag pills
   const uniqueSpecies = ["All", ...Array.from(new Set(pets.map(p => p.species)))];
 
   if (loading) {
@@ -141,27 +191,49 @@ export default function OurGems() {
   }
 
   return (
-    <main className="relative min-h-screen text-[#5A4E4E] py-24 px-4 sm:px-6 overflow-x-hidden bg-[#FFFFF7]">
-      
+    <main 
+      ref={mainRef}
+      onMouseMove={handleMouseMove}
+      className="relative min-h-screen text-[#5A4E4E] py-24 px-4 sm:px-6 overflow-x-hidden bg-[#FFFFF7]"
+    >
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#EADFC9_1px,transparent_1px),linear-gradient(to_bottom,#EADFC9_1px,transparent_1px)] bg-[size:24px_24px] opacity-[0.24] pointer-events-none z-0" />
 
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-[350px] sm:w-[550px] h-[350px] sm:h-[550px] bg-[#FADCD5]/50 rounded-full blur-[100px] sm:blur-[130px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] sm:w-[650px] h-[400px] sm:h-[650px] bg-[#F3E1C6]/40 rounded-full blur-[110px] sm:blur-[150px]" />
+      {/* Dreamy Aura Ambient Suns */}
+      <motion.div 
+        style={{ x: auraTranslateX, y: auraTranslateY }} 
+        className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
+      >
+        <motion.div 
+          animate={{ scale: [1, 1.08, 1] }}
+          transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
+          className="absolute top-40 left-[5%] w-[380px] h-[380px] bg-[#FADCD5] rounded-full blur-[110px] opacity-75"
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.12, 1] }}
+          transition={{ repeat: Infinity, duration: 12, ease: "easeInOut", delay: 1 }}
+          className="absolute bottom-24 right-[8%] w-[420px] h-[420px] bg-[#F7EAC9] rounded-full blur-[120px] opacity-80"
+        />
+        <motion.div
+          animate={{ scale: [1, 1.06, 1] }}
+          transition={{ repeat: Infinity, duration: 14, ease: "easeInOut", delay: 2 }}
+          className="absolute top-1/2 left-1/3 w-[350px] h-[350px] bg-[#E2ECE9] rounded-full blur-[100px] opacity-65"
+        />
         
-        <motion.div animate={{ y: [0, -12, 0], rotate: [0, 15, 0] }} transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }} className="absolute top-28 right-12 text-5xl opacity-30 select-none">💎</motion.div>
-        <motion.div animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }} className="absolute bottom-40 left-10 text-4xl opacity-30 select-none">🌸</motion.div>
-        <motion.div animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.4, 0.2] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute top-1/2 left-8 text-3xl select-none">🫧</motion.div>
-      </div>
+        <motion.div animate={{ y: [0, -12, 0], rotate: [0, 15, 0] }} transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }} className="absolute top-28 right-12 text-5xl opacity-20 select-none">💎</motion.div>
+        <motion.div animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }} className="absolute bottom-40 left-10 text-4xl opacity-20 select-none">🌸</motion.div>
+        <motion.div animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.35, 0.15] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute top-1/2 left-8 text-3xl select-none">🫧</motion.div>
+      </motion.div>
 
+      {/* Header Elements */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", stiffness: 100, damping: 15 }}
         className="text-center mb-16 relative z-10"
       >
-        <span className="inline-block text-[10px] uppercase tracking-widest font-black text-[#E29393] bg-white px-5 py-2 rounded-full border-2 border-[#EADFC9] shadow-sm">
-          Adoption Sanctuary ✨
+        <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-black text-[#E29393] bg-white px-5 py-2 rounded-full border-2 border-[#EADFC9] shadow-sm mb-1 cursor-default">
+          <span>Adoption Sanctuary</span> 
+          <Sun size={11} className="text-[#E7C78A] animate-spin" style={{ animationDuration: '8s' }} />
         </span>
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#3C3232] mt-5 tracking-tight drop-shadow-sm leading-tight">
           Our Precious Gems <span className="inline-block animate-bounce duration-[3s] text-[#E29393]">💎</span>
@@ -172,7 +244,7 @@ export default function OurGems() {
         <div className="h-[4px] w-20 bg-gradient-to-r from-[#E29393] via-[#E7C78A] to-[#DFB48F] mx-auto mt-6 rounded-full shadow-sm" />
       </motion.div>
 
-      {/* --- Search and Filtering Control Hub --- */}
+      {/* Search Controls */}
       <div className="max-w-xl mx-auto mb-20 relative z-10 px-2">
         <div className="relative group bg-white border-3 border-[#D2BCA4] rounded-2xl p-1.5 flex items-center shadow-md transition-all duration-300 focus-within:border-[#E29393] focus-within:shadow-xl">
           <div className="pl-4 text-[#A89898] group-focus-within:text-[#E29393] transition-colors">
@@ -187,7 +259,6 @@ export default function OurGems() {
           />
         </div>
 
-        {/* Dynamic Interactive Filter Pills */}
         {pets.length > 0 && (
           <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
             {uniqueSpecies.map((species) => (
@@ -207,7 +278,7 @@ export default function OurGems() {
         )}
       </div>
 
-      {/* --- Gems Cards Grid / Container Layout --- */}
+      {/* Gems Cards Grid */}
       <div className="flex flex-col gap-20 md:gap-28 max-w-5xl mx-auto relative z-10">
         {filteredPets.length === 0 ? (
           <motion.div 
@@ -243,9 +314,9 @@ export default function OurGems() {
                 whileHover="hover"
                 viewport={{ once: true, margin: "-60px" }}
                 onClick={() => router.push(`/our-gems/${pet._id}`)}
-                className={`scroll-mt-32 bg-white/95 backdrop-blur-md p-5 sm:p-7 md:p-10 flex flex-col ${
-                  isEven ? "lg:flex-row" : "lg:flex-row-reverse"
-                } items-center gap-8 lg:gap-12 border-3 border-[#D2BCA4] relative overflow-hidden cursor-pointer group rounded-[2.5rem_1.25rem_2.5rem_1.25rem] sm:rounded-[3.5rem_1.5rem_3.5rem_1.5rem]`}
+                className={`scroll-mt-32 bg-white/95 backdrop-blur-md p-5 sm:p-7 md:p-10 flex flex-col items-center gap-8 lg:gap-12 border-3 border-[#D2BCA4] relative overflow-hidden cursor-pointer group rounded-[2.5rem_1.25rem_2.5rem_1.25rem] sm:rounded-[3.5rem_1.5rem_3.5rem_1.5rem] ${
+                  isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'
+                }`}
               >
                 <div className="absolute top-0 right-0 w-10 h-10 opacity-30 border-t-3 border-r-3 border-[#D2BCA4] rounded-tr-md pointer-events-none group-hover:opacity-100 group-hover:scale-105 transition-all" />
                 <div className="absolute bottom-0 left-0 w-10 h-10 opacity-30 border-b-3 border-l-3 border-[#D2BCA4] rounded-bl-md pointer-events-none group-hover:opacity-100 group-hover:scale-105 transition-all" />
@@ -321,7 +392,7 @@ export default function OurGems() {
 
                     <div className="flex items-center gap-4 sm:gap-6 justify-between sm:justify-end">
                       <span className="text-[#6E5D5D] font-black text-xs tracking-wider uppercase transition-colors duration-300 flex items-center gap-1.5 group-hover:text-[#E29393]">
-                        Read Bio
+                        View Details
                         <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1.5" />
                       </span>
 
@@ -343,9 +414,7 @@ export default function OurGems() {
         )}
       </div>
 
-      <footer className="mt-36 text-center text-[#8A7979]/60 px-4 relative z-10">
-        <p className="text-[10px] sm:text-xs italic font-black tracking-widest uppercase">Every gem deserves a crown. Every pet deserves a home. 🫧</p>
-      </footer>
+      <div className="max-w-md mx-auto h-[2px] bg-dashed bg-[linear-gradient(to_right,#D2BCA4_4px,transparent_4px)] bg-[size:10px_2px] mt-28 opacity-60" />
     </main>
   );
 }
