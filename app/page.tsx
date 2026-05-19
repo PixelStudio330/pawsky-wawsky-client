@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Hero from "./components/Hero";
 import Pets from "./components/our-gems";
 import WhyAdopt from "./components/WhyAdopt";
+import SuccessStories from "./components/SuccessStories";
 
 export default function Home() {
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function Home() {
       <div>
         <Pets />
         <WhyAdopt />
+        <SuccessStories />
       </div>
 
     </main>
