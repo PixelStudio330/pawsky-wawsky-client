@@ -6,6 +6,7 @@ import Pets from "./components/our-gems";
 import WhyAdopt from "./components/WhyAdopt";
 import SuccessStories from "./components/SuccessStories";
 import PetCare from "./components/PetCare";
+import PetQuizDeck from "./components/PetQuizDeck";
 
 export default function Home() {
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function Home() {
         <WhyAdopt />
         <SuccessStories />
         <PetCare />
+        <PetQuizDeck />
       </div>
 
     </main>
