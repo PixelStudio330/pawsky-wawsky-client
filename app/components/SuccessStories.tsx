@@ -78,6 +78,7 @@ export default function SuccessStories() {
   return (
     <section 
       ref={containerRef} 
+      id="our-story-section"
       onMouseMove={handleMouseMove}
       className="relative min-h-screen py-20 sm:py-32 px-4 sm:px-6 bg-[#FFFFF7] overflow-hidden text-[#5A4E4E] select-none"
     >
@@ -220,7 +221,7 @@ export default function SuccessStories() {
       </div>
 
       {/* Decorative End Marker */}
-      <div className="max-w-xs mx-auto h-[2px] bg-dashed bg-[linear-gradient(to_right,#D2BCA4_4px,transparent_4px)] bg-[size:10px_2px] mt-24 sm:mt-36 opacity-30" />
+<div className="w-full max-w-xs mx-auto border-t-2 border-dashed border-[#D2BCA4] mt-28 opacity-100" />
     </section>
   );
 }

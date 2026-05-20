@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Sparkles, Heart, Award, ArrowRight, RotateCcw, AlertTriangle } from "lucide-react";
 
-// --- Quiz 1: Personality Matcher Data (Mapping to Database Profiles) ---
+// --- Quiz 1: Personality Matcher Data  ---
 const personalityQuiz = {
   title: "The Pet Match Mirror",
   subtitle: "Which active rescue soul shares your cosmic energy?",
@@ -57,7 +57,7 @@ const personalityQuiz = {
   ]
 };
 
-// --- Quiz 2: Capability Quiz Data (Tied directly to their specific health/breed traits) ---
+// --- Quiz 2: Capability Quiz Data  ---
 const capabilityQuiz = {
   title: "Sanctuary Readiness Ledger",
   subtitle: "Are you fully prepared for their specific needs?",
@@ -178,7 +178,6 @@ export default function PetQuizDeck() {
         calculatePersonalityMatch(updatedAnswers);
       }
     } else {
-      // Accumulate points and bad practices correctly
       if (!option.correct && option.avoidText) {
         setAvoidList(prev => [...prev, option.avoidText]);
       }
@@ -198,8 +197,9 @@ export default function PetQuizDeck() {
   return (
     <section 
       ref={sectionRef}
+      id="pet-quizes"
       onMouseMove={handleMouseMove}
-      className="relative min-h-screen py-24 px-4 sm:px-6 bg-[#FFFFF7] overflow-hidden text-[#5A4E4E] select-none flex flex-col items-center justify-center"
+      className="relative min-h-screen py-20 px-4 sm:px-6 bg-[#FFFFF7] overflow-hidden text-[#5A4E4E] select-none flex flex-col items-center justify-center"
     >
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#EADFC9_1px,transparent_1px),linear-gradient(to_bottom,#EADFC9_1px,transparent_1px)] bg-[size:24px_24px] opacity-[0.2] pointer-events-none z-0" />
       
@@ -207,6 +207,16 @@ export default function PetQuizDeck() {
         <div className="absolute top-[10%] left-[15%] w-[380px] h-[380px] bg-[#FADCD5] rounded-full blur-[100px] opacity-50" />
         <div className="absolute bottom-[10%] right-[15%] w-[400px] h-[400px] bg-[#E2ECE9] rounded-full blur-[110px] opacity-60" />
       </motion.div>
+
+      {/* ✨ MAIN SECTION HEADING */}
+      <div className="text-center relative z-10 mb-8 max-w-md mx-auto">
+        <h2 className="text-4xl font-black text-[#3C3232] tracking-tight sm:text-5xl drop-shadow-sm flex items-center justify-center gap-2">
+          The Paw Quizes
+        </h2>
+        <p className="text-xs font-bold text-[#6E5D5D]/70 mt-2 uppercase tracking-widest">
+          Interactive Sanctuary Ledger & Alignment Mirrors
+        </p>
+      </div>
 
       {/* Switcher System */}
       <div className="relative z-10 bg-white border-2 border-[#EADFC9] p-1.5 rounded-2xl flex items-center gap-2 shadow-sm mb-12">
@@ -344,6 +354,10 @@ export default function PetQuizDeck() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Footer Dotted Break */}
+      {/* Footer Dotted Break */}
+<div className="w-full max-w-xs mx-auto border-t-2 border-dashed border-[#D2BCA4] mt-28 opacity-100" />
     </section>
   );
 }

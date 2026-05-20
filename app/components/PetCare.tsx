@@ -131,6 +131,7 @@ export default function PetCare() {
   return (
     <section 
       ref={sectionRef}
+      id="pet-care-tips"
       onMouseMove={handleMouseMove}
       className="relative min-h-screen py-10 px-4 sm:px-6 bg-[#FFFFF7] overflow-hidden text-[#5A4E4E] select-none"
     >
@@ -266,7 +267,7 @@ export default function PetCare() {
       </div>
 
       {/* Footer Dotted Break */}
-      <div className="max-w-xs mx-auto h-[2px] bg-dashed bg-[linear-gradient(to_right,#D2BCA4_4px,transparent_4px)] bg-[size:10px_2px] mt-28 opacity-40" />
+    <div className="w-full max-w-xs mx-auto border-t-2 border-dashed border-[#D2BCA4] mt-28 opacity-100" />
     </section>
   );
 }

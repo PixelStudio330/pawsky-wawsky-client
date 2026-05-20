@@ -193,6 +193,7 @@ useEffect(() => {
   return (
     <main 
       ref={mainRef}
+      id="all-pets-section"
       onMouseMove={handleMouseMove}
       className="relative min-h-screen text-[#5A4E4E] py-24 px-4 sm:px-6 overflow-x-hidden bg-[#FFFFF7]"
     >
@@ -414,7 +415,8 @@ useEffect(() => {
         )}
       </div>
 
-      <div className="max-w-md mx-auto h-[2px] bg-dashed bg-[linear-gradient(to_right,#D2BCA4_4px,transparent_4px)] bg-[size:10px_2px] mt-28 opacity-60" />
+      {/* Footer Dotted Break */}
+<div className="w-full max-w-xs mx-auto border-t-2 border-dashed border-[#D2BCA4] mt-28 opacity-100" />
     </main>
   );
 }

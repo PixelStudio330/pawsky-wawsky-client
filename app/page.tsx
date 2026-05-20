@@ -7,6 +7,8 @@ import WhyAdopt from "./components/WhyAdopt";
 import SuccessStories from "./components/SuccessStories";
 import PetCare from "./components/PetCare";
 import PetQuizDeck from "./components/PetQuizDeck";
+import PetStickerStudio from "./components/PetStickerStudio";
+import Footer from "./components/Footer";
 
 export default function Home() {
   useEffect(() => {
@@ -52,6 +54,8 @@ export default function Home() {
         <SuccessStories />
         <PetCare />
         <PetQuizDeck />
+        <PetStickerStudio />
+        <Footer />
       </div>
 
     </main>
