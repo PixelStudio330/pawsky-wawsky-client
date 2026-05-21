@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import { Toaster } from 'react-hot-toast';
+import SparkleTrail from "./components/SparkleTrail";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +47,7 @@ export default function RootLayout({
         <AuthProvider>
           <Providers>
             <div className="relative z-10 min-h-screen flex flex-col">
+              <SparkleTrail />
               <Navbar />
               <div className="flex-1">
                 {children}
