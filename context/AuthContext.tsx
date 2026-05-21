@@ -3,8 +3,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 
+// Ensure cookies are passed dynamically across cross-origin requests
 axios.defaults.withCredentials = true;
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/auth';
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = `${BASE_URL}/api/auth`;
 
 export interface User {
   name: string;
@@ -31,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await axios.get(`${API_URL}/me`);
       if (response.data.success && response.data.user) {
-        setUser({ ...response.data.user }); // ✨ Force a new object reference so React catches the change
+        setUser({ ...response.data.user }); 
       } else {
         setUser(null);
       }
@@ -49,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: object) => {
     const response = await axios.post(`${API_URL}/login`, credentials);
     if (response.data.success && response.data.user) {
-      setUser({ ...response.data.user }); // ✨ Set state BEFORE navigating
+      setUser({ ...response.data.user }); 
     }
   };
 

@@ -4,9 +4,12 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios"; // ✨ Added Axios import
+import axios from "axios";
 import { Eye, EyeOff, Mail, Lock, User, Image, Sparkles, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
+
+// Dynamic base environment handshake
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // --- Framer Motion Layout Cascades ---
 const containerVariants = {
@@ -84,7 +87,6 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const router = useRouter();
-  // ✂️ Removed useAuth hook since register isn't in the context
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -107,13 +109,13 @@ export default function RegisterPage() {
       return;
     }
     if (!/[a-z]/.test(formData.password)) {
-      toast.error("**Password needs at least one lowercase letter!** ✨", {
+      toast.error("Password needs at least one lowercase letter! ✨", {
         style: { background: "#FDF1F1", color: "#613A3A", borderRadius: "1.2rem", border: "2px solid #F0C7C7" }
       });
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      toast.error("**Passwords do not match! Please verify.** 💎", {
+      toast.error("Passwords do not match! Please verify. 💎", {
         style: { background: "#FDF1F1", color: "#613A3A", borderRadius: "1.2rem", border: "2px solid #F0C7C7" }
       });
       return;
@@ -133,8 +135,8 @@ export default function RegisterPage() {
     });
 
     try {
-      // ✨ Switched to direct Axios call to your Express backend
-      await axios.post("http://localhost:5000/api/auth/register", {
+      // Dynamic route configuration pointing securely to production or development backends
+      await axios.post(`${BASE_URL}/api/auth/register`, {
         name: formData.name,
         email: formData.email,
         photoUrl: formData.photoUrl,
@@ -268,7 +270,7 @@ export default function RegisterPage() {
           {/* Avatar URL field */}
           <motion.div variants={itemVariants} className="group">
             <label className="block text-[11px] font-black text-[#5C4D4D] uppercase tracking-wider mb-2 ml-1">
-            Photo URL
+              Photo URL
             </label>
             <div className="relative rounded-2xl bg-[#FFF]/80 border-2 border-[#EADFC9] group-focus-within:border-[#4E6E58] shadow-sm transition-all overflow-hidden">
               <div className="absolute inset-y-0 left-0 pl-4.5 flex items-center pointer-events-none text-[#A89898]">
