@@ -94,25 +94,25 @@ export default function OurGems() {
     mouseY.set(y);
   };
 
-  useEffect(() => {
-    const fetchGems = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/pets", {
-          cache: "no-store"
-        });
-        const json = await response.json();
-        if (json.success) {
-          setPets(json.data);
-          setFilteredPets(json.data); 
-        }
-      } catch (error) {
-        console.error("Error connecting to separate backend:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchGems();
-  }, []);
+  const fetchGems = async () => {
+  try {
+    // This will use your Vercel env variable in production, and fallback to localhost for development
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    
+    const response = await fetch(`${API_URL}/api/pets`, {
+      cache: "no-store"
+    });
+    const json = await response.json();
+    if (json.success) {
+      setPets(json.data);
+      setFilteredPets(json.data); 
+    }
+  } catch (error) {
+    console.error("Error connecting to separate backend:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     if (!loading && typeof window !== "undefined" && window.location.hash) {
