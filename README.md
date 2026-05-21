@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🐾 Pawsky Wawsky
 
-## Getting Started
+> A full-stack Pet Adoption Platform built with the MERN stack, designed to connect loving homes with animals in need of adoption.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🌐 Live Links
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Live Site Link: https://pawsky-wawsky-client.vercel.app   
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧠 About The Project
 
-## Learn More
+Pawsky Wawsky is a modern pet adoption platform where users can explore, request, and manage pet adoptions in a structured and secure environment.
 
-To learn more about Next.js, take a look at the following resources:
+It simulates a real-world adoption system with separate roles for users and pet owners, ensuring smooth interaction between listings, requests, and approvals.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Built to demonstrate real-world full-stack development practices using authentication, database integration, and role-based operations.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## ⚙️ Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Frontend:
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+- Axios
+- Framer Motion
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Backend:
+- Node.js
+- Express.js
+- MongoDB + Mongoose
+- JWT Authentication (HTTP-only cookies)
+- CORS & Cookie Parser
+
+---
+
+## ✨ Core Features
+
+- Browse all available pets for adoption
+- View detailed pet profiles
+- Authenticated users can submit adoption requests
+- Users can manage their own adoption requests
+- Pet owners can create, update, and delete pet listings
+- Pet owners can approve or reject adoption requests
+- Secure authentication using JWT and HTTP-only cookies
+- Role-based access for users and owners
+- Fully responsive UI across devices
+
+---
+
+## 🏗️ System Overview
+
+Users interact with pet listings by browsing available animals and submitting adoption requests.  
+Pet owners manage their listings and handle incoming adoption requests through a dedicated dashboard.
+
+All data is stored securely in MongoDB and managed through RESTful APIs.
+
+---
+
+## 🔐 Authentication Flow
+
+- User registration with validation
+- Secure login system
+- JWT stored in HTTP-only cookies
+- Protected routes on both client and server
+- Persistent sessions on page reload
+
+---
+
+## 📁 Project Structure
+
+
+client/
+├── app/
+├── components/
+├── context/
+└── lib/
+
+server/
+├── controllers/
+├── models/
+├── routes/
+├── middleware/
+└── config/
+
+
+---
+
+## 🚀 Deployment
+
+- Frontend deployed on Vercel  
+- Backend deployed on Render  
+- Database hosted on MongoDB Atlas  
+
+---
+
+## 🧪 Requirements Coverage
+
+- Full CRUD operations  
+- Authentication with JWT  
+- Protected API routes  
+- MongoDB integration  
+- Responsive UI design  
+- Toast-based notifications  
+- Clean and recruiter-friendly interface  
+- No reload errors on routes  
+
+---
+
+## ⭐ Optional Features Implemented
+
+Included as part of extended functionality to enhance user experience.
+
+---
+
+## 📌 Purpose
+
+This project was built as part of a full-stack development assignment to demonstrate practical implementation of authentication systems, REST APIs, database management, and modern frontend architecture.
+
+---
+
+## 🐾 Closing Note
+
+A small system built for big-hearted users and the pets waiting for them.
