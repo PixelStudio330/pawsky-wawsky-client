@@ -196,10 +196,7 @@ export default function ProfilePage() {
           id: loadingToast,
         });
 
-        // tiny delay so toast breathes dramatically like a K-drama reveal 😭
-        setTimeout(() => {
-          router.refresh();
-        }, 500);
+        window.location.reload();
       }
     } catch (err: any) {
       console.error("PROFILE UPDATE ERROR:", err);
