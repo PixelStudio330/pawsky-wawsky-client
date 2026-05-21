@@ -20,6 +20,26 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ─── UTILITY TO STRIP HASH AFTER 500ms ───
+  const startHashVanishingTimer = () => {
+    setTimeout(() => {
+      if (window.location.hash === "#all-pets-section") {
+        window.history.replaceState(
+          null,
+          document.title,
+          window.location.pathname + window.location.search
+        );
+      }
+    }, 500);
+  };
+
+  // Handle direct URL hits / deep links on initial page mount
+  useEffect(() => {
+    if (window.location.hash === "#all-pets-section") {
+      startHashVanishingTimer();
+    }
+  }, []);
+
   const handleLogout = async () => {
     await logout();
     setMobileMenuOpen(false);
@@ -93,6 +113,9 @@ export default function Navbar() {
                       <Link 
                         key={link.name} 
                         href={link.href} 
+                        onClick={() => {
+                          if (link.href.includes('#')) startHashVanishingTimer();
+                        }}
                         className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#4E5C56] hover:text-[#6D7C75] transition-colors"
                       >
                         {link.name}
@@ -106,7 +129,7 @@ export default function Navbar() {
             {/* Spacer to prevent center logo collision on Desktop when un-scrolled */}
             {!isScrolled && <div className="w-16 hidden lg:block" />}
 
-            {/* ─── CENTER BRAND LOGO (Hidden when scrolled or on small tablet/mobile screens) ─── */}
+            {/* ─── CENTER BRAND LOGO ─── */}
             <AnimatePresence>
               {!isScrolled && (
                 <motion.div 
@@ -132,7 +155,7 @@ export default function Navbar() {
               )}
             </AnimatePresence>
 
-            {/* Brand Title visibility fix for Tablet/Mobile viewport states when unscrolled */}
+            {/* Brand Title visibility fix for Tablet/Mobile viewports */}
             {!isScrolled && (
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:hidden">
                 <Link href="/" className="text-lg font-black tracking-tighter text-[#4E5C56]">
@@ -141,14 +164,14 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* ─── RIGHT SECTION (Session Profiles / Actions Ledger) ─── */}
+            {/* ─── RIGHT SECTION (Profiles / Actions) ─── */}
             <div className="flex items-center justify-end gap-2 md:gap-4 lg:gap-6 flex-1">
               {loading ? (
                 <div className="w-8 h-8 rounded-full bg-[#EAD7C3]/50 animate-pulse" />
               ) : user ? (
                 <div className="flex items-center gap-2 md:gap-4">
                   <Link 
-                    href="/dashboard/my-requests" 
+                    href="/dashboard" 
                     title="Go to Dashboard"
                     className="p-2 text-[#4E5C56] hover:bg-[#6D7C75]/10 rounded-full transition-colors"
                   >
@@ -178,7 +201,6 @@ export default function Navbar() {
                   </button>
                 </div>
               ) : (
-                /* Authenticated State Triggers */
                 <div className="flex items-center gap-4 md:gap-6">
                   <Link href="/login" className="text-[11px] font-black uppercase tracking-[0.2em] text-[#4E5C56] hover:text-[#6D7C75] transition-colors">
                     Login
@@ -221,7 +243,10 @@ export default function Navbar() {
                 <Link 
                   key={link.name} 
                   href={link.href} 
-                  onClick={() => setMobileMenuOpen(false)} 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (link.href.includes('#')) startHashVanishingTimer();
+                  }} 
                   className="text-3xl font-black uppercase text-[#4E5C56] hover:text-white transition-colors tracking-tight"
                 >
                   {link.name}
@@ -236,7 +261,7 @@ export default function Navbar() {
                   <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-black uppercase text-white hover:text-[#4E5C56] transition-colors flex items-center gap-3">
                     <User size={20} /> Profile Setting
                   </Link>
-                  <Link href="/dashboard/my-requests" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-black uppercase text-white hover:text-[#4E5C56] transition-colors flex items-center gap-3">
+                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-black uppercase text-white hover:text-[#4E5C56] transition-colors flex items-center gap-3">
                     <LayoutDashboard size={20} /> Dashboard
                   </Link>
                   <button 

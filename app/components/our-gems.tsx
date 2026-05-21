@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext"; 
-import { Sparkles, MapPin, ArrowRight, Search, Sun } from "lucide-react";
+import { Sparkles, MapPin, ArrowRight, Search, Sun, CheckCircle, Clock } from "lucide-react";
 
 interface IPet {
   _id: string;
@@ -18,6 +18,7 @@ interface IPet {
   location: string;
   adoptionFee: number;
   description: string;
+  status?: "available" | "pending" | "adopted";
 }
 
 const bubbleCardVariants = {
@@ -68,14 +69,13 @@ export default function OurGems() {
   const [pets, setPets] = useState<IPet[]>([]);
   const [filteredPets, setFilteredPets] = useState<IPet[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>(" ");
   const [selectedSpecies, setSelectedSpecies] = useState<string>("All");
   
   const mainRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user } = useAuth();
 
-  // Interactive cursor aura tracking
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -94,7 +94,6 @@ export default function OurGems() {
     mouseY.set(y);
   };
 
-  // 1. Fetching logic
   useEffect(() => {
     const fetchGems = async () => {
       try {
@@ -115,35 +114,31 @@ export default function OurGems() {
     fetchGems();
   }, []);
 
-// 2. Client-side Post-Hydration Hash Scroller & 3s URL Vanishing Act
-useEffect(() => {
-  if (!loading && typeof window !== "undefined" && window.location.hash) {
-    const hashId = window.location.hash.substring(1); 
-    const targetElement = document.getElementById(hashId);
-    
-    // 1. Smoothly scroll to the target element
-    if (targetElement) {
-      setTimeout(() => {
-        targetElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }, 100);
+  useEffect(() => {
+    if (!loading && typeof window !== "undefined" && window.location.hash) {
+      const hashId = window.location.hash.substring(1); 
+      const targetElement = document.getElementById(hashId);
+      
+      if (targetElement) {
+        setTimeout(() => {
+          targetElement.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 100);
+      }
+
+      const vanishTimer = setTimeout(() => {
+        window.history.replaceState(
+          null, 
+          document.title, 
+          window.location.pathname + window.location.search
+        );
+      }, 500);
+
+      return () => clearTimeout(vanishTimer);
     }
-
-    // 2. Wait 3 seconds, then vanish the id code from the URL bar cleanly
-    const vanishTimer = setTimeout(() => {
-      // Replaces the URL fragment without reloading the components or pushing to history stack
-      window.history.replaceState(
-        null, 
-        document.title, 
-        window.location.pathname + window.location.search
-      );
-    }, 500);
-
-    return () => clearTimeout(vanishTimer);
-  }
-}, [loading]);
+  }, [loading]);
 
   useEffect(() => {
     const results = pets.filter((pet) => {
@@ -162,12 +157,14 @@ useEffect(() => {
     setFilteredPets(results);
   }, [searchQuery, selectedSpecies, pets]);
 
-  const handleAdoptClick = (e: React.MouseEvent, petId: string) => {
+  const handleAdoptClick = (e: React.MouseEvent, pet: IPet) => {
     e.stopPropagation(); 
+    if (pet.status === "adopted") return;
+
     if (!user) {
       router.push("/login");
     } else {
-      router.push(`/our-gems/${petId}?adopt=true`);
+      router.push(`/our-gems/${pet._id}?adopt=true`);
     }
   };
 
@@ -195,7 +192,7 @@ useEffect(() => {
       ref={mainRef}
       id="all-pets-section"
       onMouseMove={handleMouseMove}
-      className="relative min-h-screen text-[#5A4E4E] py-24 px-4 sm:px-6 overflow-x-hidden bg-[#FFFFF7]"
+      className="relative min-h-screen text-[#5A4E4E] py-24 px-4 sm:px-6 overflow-x-hidden bg-[#FFFFF7] scroll-mt-32"
     >
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#EADFC9_1px,transparent_1px),linear-gradient(to_bottom,#EADFC9_1px,transparent_1px)] bg-[size:24px_24px] opacity-[0.24] pointer-events-none z-0" />
 
@@ -219,10 +216,6 @@ useEffect(() => {
           transition={{ repeat: Infinity, duration: 14, ease: "easeInOut", delay: 2 }}
           className="absolute top-1/2 left-1/3 w-[350px] h-[350px] bg-[#E2ECE9] rounded-full blur-[100px] opacity-65"
         />
-        
-        <motion.div animate={{ y: [0, -12, 0], rotate: [0, 15, 0] }} transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }} className="absolute top-28 right-12 text-5xl opacity-20 select-none">💎</motion.div>
-        <motion.div animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }} className="absolute bottom-40 left-10 text-4xl opacity-20 select-none">🌸</motion.div>
-        <motion.div animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.35, 0.15] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute top-1/2 left-8 text-3xl select-none">🫧</motion.div>
       </motion.div>
 
       {/* Header Elements */}
@@ -239,9 +232,6 @@ useEffect(() => {
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#3C3232] mt-5 tracking-tight drop-shadow-sm leading-tight">
           Our Precious Gems <span className="inline-block animate-bounce duration-[3s] text-[#E29393]">💎</span>
         </h1>
-        <p className="text-[#6E5D5D] mt-3 text-base sm:text-lg italic font-bold max-w-xl mx-auto px-4">
-          Meet the beautiful souls that turn our small sanctuary into a cozy home.
-        </p>
         <div className="h-[4px] w-20 bg-gradient-to-r from-[#E29393] via-[#E7C78A] to-[#DFB48F] mx-auto mt-6 rounded-full shadow-sm" />
       </motion.div>
 
@@ -293,18 +283,12 @@ useEffect(() => {
                 ? "The nursery is quiet right now. Check back soon!" 
                 : "No precious gems match your search context."}
             </p>
-            {pets.length > 0 && (
-              <button 
-                onClick={() => { setSearchQuery(""); setSelectedSpecies("All"); }}
-                className="mt-5 text-[10px] tracking-widest uppercase font-black bg-[#FCFAF2] border-2 border-[#DFB48F]/50 text-[#A08068] px-4 py-2 rounded-lg hover:bg-white transition-all"
-              >
-                Clear Filters ✨
-              </button>
-            )}
           </motion.div>
         ) : (
           filteredPets.map((pet, i) => {
             const isEven = i % 2 === 0;
+            const currentStatus = pet.status || "available";
+
             return (
               <motion.section
                 key={pet._id}
@@ -315,20 +299,20 @@ useEffect(() => {
                 whileHover="hover"
                 viewport={{ once: true, margin: "-60px" }}
                 onClick={() => router.push(`/our-gems/${pet._id}`)}
-                className={`scroll-mt-32 bg-white/95 backdrop-blur-md p-5 sm:p-7 md:p-10 flex flex-col items-center gap-8 lg:gap-12 border-3 border-[#D2BCA4] relative overflow-hidden cursor-pointer group rounded-[2.5rem_1.25rem_2.5rem_1.25rem] sm:rounded-[3.5rem_1.5rem_3.5rem_1.5rem] ${
+                className={`bg-white/95 backdrop-blur-md p-5 sm:p-7 md:p-10 flex flex-col items-center gap-8 lg:gap-12 border-3 border-[#D2BCA4] relative overflow-hidden cursor-pointer group rounded-[2.5rem_1.25rem_2.5rem_1.25rem] sm:rounded-[3.5rem_1.5rem_3.5rem_1.5rem] ${
                   isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'
-                }`}
+                } ${currentStatus === "adopted" ? "opacity-80 border-[#EADFC9]" : ""}`}
               >
                 <div className="absolute top-0 right-0 w-10 h-10 opacity-30 border-t-3 border-r-3 border-[#D2BCA4] rounded-tr-md pointer-events-none group-hover:opacity-100 group-hover:scale-105 transition-all" />
                 <div className="absolute bottom-0 left-0 w-10 h-10 opacity-30 border-b-3 border-l-3 border-[#D2BCA4] rounded-bl-md pointer-events-none group-hover:opacity-100 group-hover:scale-105 transition-all" />
-
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-[#FFF0F0]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                 <div className="w-full lg:w-[44%] relative flex-shrink-0">
                   <motion.div 
                     variants={bubbleImageVariants(isEven)}
                     initial="initial"
-                    className="absolute -inset-2 md:-inset-3 bg-[#E2A6A6] rounded-[2rem_1rem_2rem_1rem] sm:rounded-[2.5rem_1.25rem_2.5rem_1.25rem] z-0 shadow-inner" 
+                    className={`absolute -inset-2 md:-inset-3 rounded-[2rem_1rem_2rem_1rem] sm:rounded-[2.5rem_1.25rem_2.5rem_1.25rem] z-0 shadow-inner ${
+                      currentStatus === "adopted" ? "bg-[#A8A59E]" : "bg-[#E2A6A6]"
+                    }`} 
                   />
                   
                   <div className="relative overflow-hidden rounded-[1.8rem_0.8rem_1.8rem_0.8rem] sm:rounded-[2.2rem_1.1rem_2.2rem_1.1rem] shadow-md border-[4px] border-white z-10 aspect-[4/3] sm:aspect-video lg:aspect-auto">
@@ -337,7 +321,9 @@ useEffect(() => {
                       alt={pet.name}
                       width={500}
                       height={400}
-                      className="w-full h-full lg:h-[350px] object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      className={`w-full h-full lg:h-[350px] object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${
+                        currentStatus === "adopted" ? "grayscale contrast-[0.85]" : ""
+                      }`}
                       priority={i === 0}
                     />
                   </div>
@@ -348,7 +334,7 @@ useEffect(() => {
                     whileHover="hover"
                     className="absolute -bottom-3 -right-3 sm:-bottom-4 sm:-right-4 bg-white w-12 h-12 sm:w-14 sm:h-14 rounded-2xl shadow-md flex items-center justify-center text-lg sm:text-xl z-20 border-2 border-[#D2BCA4] select-none"
                   >
-                    🌸
+                    {currentStatus === "adopted" ? "🏡" : currentStatus === "pending" ? "⏳" : "🌸"}
                   </motion.div>
                 </div>
 
@@ -358,11 +344,23 @@ useEffect(() => {
                       <h2 className="text-3xl sm:text-4xl font-black text-[#3C3232] tracking-tight transition-colors duration-300 group-hover:text-[#E29393]">
                         {pet.name}
                       </h2>
+                      
+                      {currentStatus === "adopted" ? (
+                        <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 bg-[#F1F3F1] text-[#556B58] rounded-full border border-[#D5DDD7] flex items-center gap-1">
+                          <CheckCircle size={10} /> Adopted!!
+                        </span>
+                      ) : currentStatus === "pending" ? (
+                        <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 bg-[#FFF9EB] text-[#C99A2E] rounded-full border border-[#FBEAC4] flex items-center gap-1">
+                          <Clock size={10} className="animate-pulse" /> Pending
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 bg-[#F2FAF6] text-[#4E8C6A] rounded-full border border-[#D4EFE0]">
+                          Available
+                        </span>
+                      )}
+
                       <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 bg-[#FFF0F0] text-[#E29393] rounded-full border border-[#FCD4D4]">
                         {pet.age} Old
-                      </span>
-                      <span className="text-[9px] uppercase font-black px-2.5 py-1 bg-[#FCFAF2] border border-[#DFB48F]/50 text-[#A08068] rounded-md tracking-widest">
-                        {pet.species}
                       </span>
                     </div>
                     
@@ -398,12 +396,25 @@ useEffect(() => {
                       </span>
 
                       <motion.button
-                        whileHover={{ scale: 1.05, backgroundColor: "#3F5947" }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={(e) => handleAdoptClick(e, pet._id)}
-                        className="px-5 py-3 bg-[#4E6E58] text-white rounded-xl font-black shadow-[0_6px_20px_rgba(78,110,88,0.2)] transition-all duration-300 text-[10px] tracking-widest uppercase flex items-center gap-1.5"
+                        whileHover={currentStatus === "adopted" ? {} : { scale: 1.05, backgroundColor: currentStatus === "pending" ? "#D9A066" : "#3F5947" }}
+                        whileTap={currentStatus === "adopted" ? {} : { scale: 0.95 }}
+                        disabled={currentStatus === "adopted"}
+                        onClick={(e) => handleAdoptClick(e, pet)}
+                        className={`px-5 py-3 rounded-xl font-black transition-all duration-300 text-[10px] tracking-widest uppercase flex items-center gap-1.5 ${
+                          currentStatus === "adopted" 
+                            ? "bg-[#D2CFC9] text-[#7A7771] cursor-not-allowed shadow-none"
+                            : currentStatus === "pending"
+                            ? "bg-[#EAA15F] text-white shadow-[0_6px_20px_rgba(234,161,95,0.2)]"
+                            : "bg-[#4E6E58] text-white shadow-[0_6px_20px_rgba(78,110,88,0.2)]"
+                        }`}
                       >
-                        Adopt Now <Sparkles size={11} className="animate-pulse" />
+                        {currentStatus === "adopted" ? (
+                          <>Found a Home! 🎉</>
+                        ) : currentStatus === "pending" ? (
+                          <>In Review ⏳</>
+                        ) : (
+                          <>Adopt Now <Sparkles size={11} className="animate-pulse" /></>
+                        )}
                       </motion.button>
                     </div>
                   </div>
@@ -414,9 +425,7 @@ useEffect(() => {
           })
         )}
       </div>
-
-      {/* Footer Dotted Break */}
-<div className="w-full max-w-xs mx-auto border-t-2 border-dashed border-[#D2BCA4] mt-28 opacity-100" />
+      <div className="w-full max-w-xs mx-auto border-t-2 border-dashed border-[#D2BCA4] mt-28 opacity-100" />
     </main>
   );
 }

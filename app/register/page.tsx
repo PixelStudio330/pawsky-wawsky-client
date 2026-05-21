@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import axios from "axios"; // ✨ Added Axios import
 import { Eye, EyeOff, Mail, Lock, User, Image, Sparkles, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -84,7 +84,7 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const router = useRouter();
-  const { register } = useAuth();
+  // ✂️ Removed useAuth hook since register isn't in the context
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -133,7 +133,8 @@ export default function RegisterPage() {
     });
 
     try {
-      await register({
+      // ✨ Switched to direct Axios call to your Express backend
+      await axios.post("http://localhost:5000/api/auth/register", {
         name: formData.name,
         email: formData.email,
         photoUrl: formData.photoUrl,

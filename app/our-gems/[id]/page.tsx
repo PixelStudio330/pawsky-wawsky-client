@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useRouter, useSearchParams } from "next/navigation"; 
 import { useAuth } from "../../context/AuthContext"; 
-import toast from "react-hot-toast"; // Imported react-hot-toast
+import toast from "react-hot-toast"; 
+import api from '@/lib/axios';
 
 interface IPet {
   _id: string;
@@ -21,9 +22,9 @@ interface IPet {
   adoptionFee: number;
   description: string;
   ownerEmail: string;
+  status?: "available" | "pending" | "adopted"; // Added status alignment
 }
 
-// Reusable cozy toast styling configuration
 const cozyToastStyle = {
   style: {
     background: '#FFFDF9',
@@ -37,8 +38,9 @@ const cozyToastStyle = {
   },
 };
 
-export default function PetDetailsPage() {
-  const { id } = useParams();
+function PetDetailsContent() {
+  const params = useParams();
+  const id = params?.id as string;
   const router = useRouter();
   const searchParams = useSearchParams(); 
   
@@ -51,13 +53,17 @@ export default function PetDetailsPage() {
   const [pickupDate, setPickupDate] = useState<string>("");
   const [message, setMessage] = useState<string>("");
 
-  const isOwner = pet?.ownerEmail === user?.email;
+  const isOwner = pet && user ? pet.ownerEmail === user.email : false;
+  const isAlreadyAdopted = pet?.status === "adopted";
+  const derivedUserName = user?.name || (user as any)?.displayName || (user as any)?.username || user?.email?.split('@')[0] || "Cozy Adopter";
 
   useEffect(() => {
     const fetchPetDetails = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/pets/${id}`);
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${baseUrl}/api/pets/${id}`);
         const json = await res.json();
+        
         if (json.success) {
           setPet(json.data);
         } else {
@@ -74,52 +80,66 @@ export default function PetDetailsPage() {
     if (id) fetchPetDetails();
   }, [id]);
 
+  // ✅ FRONTEND GUARD: Prevents automated modal popup if owner OR if already adopted
   useEffect(() => {
-    if (!loading && !authLoading && user && searchParams.get("adopt") === "true" && !isOwner) {
+    if (isOwner || isAlreadyAdopted) {
+      setShowModal(false);
+      return;
+    }
+
+    if (!loading && !authLoading && user && searchParams?.get("adopt") === "true") {
       setShowModal(true);
     }
-  }, [loading, authLoading, user, searchParams, isOwner]);
+  }, [loading, authLoading, user, searchParams, isOwner, isAlreadyAdopted]);
 
   const handleAdoptionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isOwner || !user) return;
+    if (isOwner || isAlreadyAdopted || !user) return;
 
     const applicationPayload = {
       petId: pet?._id,
       petName: pet?.name,
-      userName: user.displayName || user.name, 
-      userEmail: user.email,
+      petOwnerEmail: pet?.ownerEmail,
+      userName: derivedUserName,
+      userEmail: user?.email,
       pickupDate,
-      message,
+      message: message || "I would love to give this gem a cozy home!", 
       status: "pending" 
     };
 
-    // Using toast.promise for a smooth, interactive loading state during submit
     await toast.promise(
-      fetch("http://localhost:5000/api/adoptions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(applicationPayload),
-      }).then(async (res) => {
-        const json = await res.json();
-        if (!json.success) throw new Error(json.message || "Failed");
+      api.post("/api/adoptions", applicationPayload) 
+      .then((res) => {
+        if (!res.data.success) throw new Error(res.data.message || "Failed");
         
         setShowModal(false);
-        router.push("/my-requests");
-        return json;
+        router.push("/dashboard");
+        return res.data;
       }),
       {
         loading: 'Sending application over to the sanctuary... 🕊️',
-        success: `Application submitted! Best of luck with ${pet?.name || 'your choice'}! ✨`,
-        error: 'Pipeline block: Could not submit application. 🐾',
+        success: `Application submitted! ✨`,
+        error: (err: any) => {
+          const backendMessage = err.response?.data?.message || err.response?.data?.error;
+          return backendMessage || 'Pipeline block: Could not submit application. 🐾';
+        },
       },
       cozyToastStyle
     );
   };
 
+  // ✅ FRONTEND GUARD: Explicit block validation inside manual click
   const handleAdoptButtonAction = () => {
+    if (isOwner) {
+      toast.error("You cannot apply to adopt your own sanctuary listing! 🔒", cozyToastStyle);
+      return;
+    }
+
+    if (isAlreadyAdopted) {
+      toast.error("This asset has found a family! Application channel is closed. 🏡", cozyToastStyle);
+      return;
+    }
+
     if (!user) {
       toast("Please sign in to start your adoption journey! 👉👈", {
         icon: "🔒",
@@ -132,12 +152,7 @@ export default function PetDetailsPage() {
   };
 
   if (loading || authLoading) {
-    return (
-      <div className="min-h-screen bg-[#FDF6EC] flex items-center justify-center relative">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#EAD7C3_1px,transparent_1px),linear-gradient(to_bottom,#EAD7C3_1px,transparent_1px)] bg-[size:24px_24px] opacity-20 pointer-events-none" />
-        <div className="w-12 h-12 border-4 border-[#F0A8A8] border-t-transparent rounded-full animate-spin relative z-10" />
-      </div>
-    );
+    return <LoadingStateSkeleton />;
   }
 
   if (!pet) {
@@ -162,19 +177,13 @@ export default function PetDetailsPage() {
     <main className="relative min-h-screen bg-[#FDF6EC] text-[#5C6B64] py-12 md:py-20 px-4 sm:px-6 md:px-8 overflow-x-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#EAD7C3_1px,transparent_1px),linear-gradient(to_bottom,#EAD7C3_1px,transparent_1px)] bg-[size:24px_24px] opacity-[0.22] pointer-events-none z-0" />
 
-      <div className="absolute inset-0 pointer-events-none z-0 opacity-50">
-        <div className="absolute top-1/4 right-[-100px] w-[300px] md:w-[450px] h-[300px] md:h-[450px] bg-[#FDF1F1] rounded-full blur-3xl" />
-        <div className="absolute bottom-10 left-[-50px] w-[250px] h-[250px] bg-[#E7C78A]/10 rounded-full blur-3xl" />
-      </div>
-
       <div className="max-w-6xl mx-auto relative z-10">
-        {/* Around line 191 in PetDetailsPage */}
-<button 
-  onClick={() => router.replace(`/#pet-${pet._id}`)} 
-  className="mb-6 md:mb-10 flex items-center gap-2 text-xs md:text-sm font-black uppercase tracking-wider text-[#6D7C75] hover:text-[#E29393] transition-colors pt-16 md:pt-24"
->
-  ← Back to All Precious Gems
-</button>
+        <button 
+          onClick={() => router.replace(`/#pet-${pet._id}`)} 
+          className="mb-6 md:mb-10 flex items-center gap-2 text-xs md:text-sm font-black uppercase tracking-wider text-[#6D7C75] hover:text-[#E29393] transition-colors pt-16 md:pt-24"
+        >
+          ← Back to All Precious Gems
+        </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           <motion.div 
@@ -189,7 +198,7 @@ export default function PetDetailsPage() {
                 alt={pet.name} 
                 width={600} 
                 height={700} 
-                className="w-full h-full lg:h-[560px] object-cover"
+                className={`w-full h-full lg:h-[560px] object-cover ${isAlreadyAdopted ? "grayscale contrast-[0.85]" : ""}`}
                 priority
               />
             </div>
@@ -209,6 +218,11 @@ export default function PetDetailsPage() {
                 <span className="text-[10px] md:text-xs font-black uppercase tracking-wider px-2.5 py-1 bg-[#FDF1F1] text-[#E29393] border border-[#F0A8A8]/40 rounded-md">
                   🛡️ {pet.vaccinationStatus}
                 </span>
+                {isAlreadyAdopted && (
+                  <span className="text-[10px] md:text-xs font-black uppercase tracking-wider px-2.5 py-1 bg-[#F1F3F1] text-[#556B58] border border-[#D5DDD7] rounded-md">
+                    🏡 Found a Family
+                  </span>
+                )}
               </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#4E5C56] tracking-tight mb-3 flex flex-wrap items-baseline gap-2">
@@ -242,9 +256,13 @@ export default function PetDetailsPage() {
             </div>
 
             <div className="mt-8 md:mt-10">
-              ={isOwner ? (
+              {isOwner ? (
                 <div className="p-4 bg-[#FDF1F1] border border-[#F0A8A8]/30 rounded-xl text-center text-xs md:text-sm text-[#E29393] font-bold">
                   🔒 You own this sanctuary listing. Manage adoption requests for this pet inside your account dashboard.
+                </div>
+              ) : isAlreadyAdopted ? (
+                <div className="p-4 bg-[#FCFAF5] border border-[#EADFC9] rounded-xl text-center text-xs md:text-sm text-[#8A7979] font-black uppercase tracking-wider">
+                  🏡 This precious gem has been adopted into a beautiful forever home!
                 </div>
               ) : (
                 <motion.button
@@ -262,7 +280,7 @@ export default function PetDetailsPage() {
       </div>
 
       <AnimatePresence>
-        {showModal && (
+        {showModal && !isOwner && !isAlreadyAdopted && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0 }}
@@ -291,7 +309,7 @@ export default function PetDetailsPage() {
 
                 <div>
                   <label className="block text-[10px] font-black uppercase text-[#6D7C75] mb-1 tracking-wider">Applicant Name</label>
-                  <input type="text" value={user?.displayName || user?.name || ""} readOnly className="w-full p-3 bg-[#FCFAF5] border border-[#EAD7C3]/30 rounded-lg text-xs md:text-sm text-slate-400 font-bold focus:outline-none cursor-not-allowed" />
+                  <input type="text" value={derivedUserName} readOnly className="w-full p-3 bg-[#FCFAF5] border border-[#EAD7C3]/30 rounded-lg text-xs md:text-sm text-slate-400 font-bold focus:outline-none cursor-not-allowed" />
                 </div>
 
                 <div>
@@ -342,5 +360,22 @@ export default function PetDetailsPage() {
         )}
       </AnimatePresence>
     </main>
+  );
+}
+
+function LoadingStateSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#FDF6EC] flex items-center justify-center relative">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#EAD7C3_1px,transparent_1px),linear-gradient(to_bottom,#EAD7C3_1px,transparent_1px)] bg-[size:24px_24px] opacity-20 pointer-events-none" />
+      <div className="w-12 h-12 border-4 border-[#F0A8A8] border-t-transparent rounded-full animate-spin relative z-10" />
+    </div>
+  );
+}
+
+export default function PetDetailsPage() {
+  return (
+    <Suspense fallback={<LoadingStateSkeleton />}>
+      <PetDetailsContent />
+    </Suspense>
   );
 }

@@ -19,7 +19,33 @@
   }
 }
 
+body {
+  background: #f6f4ef;
+  color: #000;
+  font-family: 'Inter', sans-serif;
+}
 
+.dashboardInput {
+  height: 64px;
+  border-radius: 0px; /* Brutalist: Sharp edges */
+  border: 1px solid #000;
+  background: transparent;
+  padding-inline: 20px;
+  outline: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.dashboardInput:focus {
+  background: #000;
+  color: #fff;
+}
+
+/* Custom scrollbar for that editorial feel */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f6f4ef; }
+::-webkit-scrollbar-thumb { background: #000; }
 
 body {
   background: var(--background);

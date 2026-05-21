@@ -29,14 +29,20 @@ export default function Hero() {
     },
   };
 
-  // Smooth scroll handler to seamlessly transition down to the target pet card
+  // Smooth scroll handler to seamlessly transition down to the start of the component
   const handleScrollToPet = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    const targetElement = document.getElementById("pet-6a0b02ada58270408a4455e6");
-    if (targetElement) {
+    
+    // 1. First attempt to target the grid section wrapper
+    const mainSection = document.getElementById("all-pets-section");
+    
+    if (mainSection) {
+      // 2. Look for the top header element inside it so it doesn't drop down to random cards
+      const targetElement = mainSection.querySelector("h1") || mainSection;
+      
       targetElement.scrollIntoView({
         behavior: "smooth",
-        block: "center", // brings it to the sweet spot of the screen view
+        block: "start", // Snaps beautifully to the top header area
       });
     }
   };
