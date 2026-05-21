@@ -319,7 +319,7 @@ export default function UnifiedDashboard() {
 
       {/* HEADER */}
       <header className="max-w-7xl mx-auto mb-10 border-b border-[#EADFC9] pb-6">
-        <h1 className="text-4xl md:text-5xl font-black">
+        <h1 className="text-4xl pt-28 md:text-5xl font-black">
           Hello,{' '}
           {user?.name ||
             user?.displayName ||
