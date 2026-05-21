@@ -16,11 +16,16 @@
 }
 
 html, body {
-  height: 100%;
+  /* Change this line */
+  min-height: 100%; 
+  /* Or use this, which is safer for modern browsers */
+  /* min-height: 100vh; */
 }
 
 body {
   background-color: var(--bg) !important;
   color: var(--text) !important;
   transition: all 0.3s ease;
+  /* Add this just in case */
+  overflow-y: auto; 
 }
