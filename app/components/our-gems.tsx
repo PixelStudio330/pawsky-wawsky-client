@@ -69,7 +69,7 @@ export default function OurGems() {
   const [pets, setPets] = useState<IPet[]>([]);
   const [filteredPets, setFilteredPets] = useState<IPet[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>(" ");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedSpecies, setSelectedSpecies] = useState<string>("All");
   
   const mainRef = useRef<HTMLDivElement>(null);
