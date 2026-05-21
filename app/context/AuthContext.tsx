@@ -46,6 +46,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // --- GOOGLE OAUTH AUTO-CHECK TRIGGER ---
+    // If your backend redirects to '/' or '/login' with a status parameter (e.g., ?login=success)
+    const params = new URLSearchParams(window.location.search);
+    const loginSuccess = params.get('login') === 'success';
+
+    if (loginSuccess) {
+      // Clean up the URL parameters instantly to maintain a pristine aesthetic
+      const cleanUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+
+    // Always check user session on mount (covers standard reloads + oauth returns)
     checkUserSession();
   }, []);
 
@@ -60,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await axios.post(`${API_URL}/logout`);
     } catch (err) {
-      console.error(err);
+      console.error("Logout encounter error:", err);
     } finally {
       setUser(null);
     }

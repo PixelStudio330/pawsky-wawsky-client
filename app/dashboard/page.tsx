@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { 
   Plus, Trash2, ListChecks, Heart, 
   PawPrint, DollarSign, Image as ImageIcon, Tag, X,
-  Edit2, Eye, Check, Calendar, Mail, User, Info, Loader2
+  Edit2, Eye, Check, Calendar, Mail, User, Loader2
 } from 'lucide-react';
 import api from '@/lib/axios';
 import toast from 'react-hot-toast';
@@ -47,9 +47,9 @@ export default function UnifiedDashboard() {
       setPets(p.data.data || []);
       setReceivedRequests(r.data.data || []);
       setSentRequests(a.data.data || []);
-      setLoading(false);
     } catch { 
       toast.error("Failed to fetch dashboard data"); 
+    } finally {
       setLoading(false);
     }
   };
@@ -58,7 +58,7 @@ export default function UnifiedDashboard() {
 
   // --- STATS CALCULATION ---
   const totalListings = pets.length;
-  const adoptedListings = pets.filter(p => p.status === 'Adopted').length;
+  const adoptedListings = pets.filter(p => p.status?.toLowerCase() === 'adopted').length;
   const availableListings = totalListings - adoptedListings;
 
   // --- PET CRUD ACTIONS ---
@@ -108,26 +108,39 @@ export default function UnifiedDashboard() {
   const handleUpdateAppStatus = async (reqId: string, petId: string, newStatus: string) => {
     const petRecord = pets.find(p => p._id === petId);
     
-    // Core Challenge Rule: Block choice if the pet is already marked as Adopted
-    if (newStatus === 'approved' && petRecord?.status === 'Adopted') {
+    // Normalize string casing checks to safe-guard matching rules
+    if (newStatus.toLowerCase() === 'approved' && petRecord?.status?.toLowerCase() === 'adopted') {
       toast.error("This pet listing has already been adopted! Only one request can be accepted. 🔒");
       return;
     }
 
     try {
-      // Hit backend patch endpoint to process request status change
-      await api.patch(`/api/adoptions/${reqId}`, { status: newStatus });
+      await api.patch(`/api/adoptions/${reqId}`, { status: newStatus.toLowerCase() });
       toast.success(`Application status marked as ${newStatus}! 🎉`);
       
-      // Instantly refresh backend sync state across dashboards
-      fetchData();
+      // 1. Await full data synchronization from backend database
+      const [p, r] = await Promise.all([
+        api.get('/api/pets/my-pets'),
+        api.get('/api/adoptions/my-received-requests')
+      ]);
       
-      // Auto-lock and sync open modal layout states locally
+      const updatedPets = p.data.data || [];
+      const updatedRequests = r.data.data || [];
+      
+      setPets(updatedPets);
+      setReceivedRequests(updatedRequests);
+
+      // 2. Safely sync current open modal view parameters
       if (selectedPet && selectedPet._id === petId) {
-        setSelectedPet((prev: any) => ({
-          ...prev,
-          status: newStatus === 'approved' ? 'Adopted' : prev.status
-        }));
+        const freshlySyncedPet = updatedPets.find((petItem: any) => petItem._id === petId);
+        if (freshlySyncedPet) {
+          setSelectedPet(freshlySyncedPet);
+        } else {
+          setSelectedPet((prev: any) => ({
+            ...prev,
+            status: newStatus.toLowerCase() === 'approved' ? 'Adopted' : prev.status
+          }));
+        }
       }
     } catch {
       toast.error("Failed to update layout status parameters.");
@@ -150,9 +163,32 @@ export default function UnifiedDashboard() {
   return (
     <div className="min-h-screen bg-[#FFFDF9] p-6 md:p-12 pt-28 font-sans text-[#4A4440]">
       
-      {/* EVALUATION ASSIGNMENT HEADER */}
-      <header className="max-w-7xl mx-auto mb-10 border-b-2 border-[#EADFC9]/40 pb-6 pt-30">
-        <h1 className="text-5xl font-black text-[#3C3232]">
+      <style dangerouslySetInnerHTML={{__html: `
+        .cozy-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #EADFC9 transparent;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+        .cozy-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .cozy-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .cozy-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #EADFC9;
+          border-radius: 20px;
+        }
+        .cozy-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: #C1D6C7;
+        }
+      `}} />
+
+      {/* HEADER SECTION */}
+      <header className="max-w-7xl mx-auto mb-10 border-b-2 border-[#EADFC9]/40 pb-6">
+        <h1 className="text-5xl pt-28 font-black text-[#3C3232]">
           Hello, {user?.name || user?.displayName || user?.username || user?.email?.split('@')[0] || "Cozy Human"}! 👋
         </h1>
         <p className="text-[#A89898] mt-2 font-medium">Dashboard Layout View &bull; Unified Control Center</p>
@@ -161,7 +197,7 @@ export default function UnifiedDashboard() {
       {/* DASHBOARD GRID */}
       <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* LEFT COLUMN: DASHBOARD VIEW -> MY LISTINGS */}
+        {/* LEFT COLUMN: LISTINGS */}
         <div className="lg:col-span-8 space-y-8">
           
           {/* STATS ROW */}
@@ -180,7 +216,7 @@ export default function UnifiedDashboard() {
             </div>
           </div>
 
-          {/* MY LISTINGS SEGMENT SECTION */}
+          {/* SECTION HEADER */}
           <div id="my-listings-view" className="flex justify-between items-center bg-white p-6 rounded-[2rem] border-2 border-[#EADFC9] shadow-sm">
             <div>
               <span className="text-[10px] font-black tracking-widest text-[#4E6E58] bg-[#C1D6C7]/30 px-3 py-1 rounded-md uppercase block w-max mb-1">Dashboard Component</span>
@@ -199,16 +235,21 @@ export default function UnifiedDashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {pets.map((pet) => {
-                // Determine layout lifecycle status dynamically
-                const hasPendingRequests = receivedRequests.some(r => r.petId === pet._id && r.status === 'pending');
-                let lifecycleStatus = pet.status === 'Adopted' ? 'Unavailable' : hasPendingRequests ? 'Pending' : 'Available';
+                const associatedRequests = receivedRequests.filter(r => r.petId === pet._id);
+                const hasPendingRequests = associatedRequests.some(r => r.status?.toLowerCase() === 'pending');
+                
+                let lifecycleStatus = 'Available';
+                if (pet.status?.toLowerCase() === 'adopted') {
+                  lifecycleStatus = 'Adopted';
+                } else if (hasPendingRequests) {
+                  lifecycleStatus = 'Pending';
+                }
 
                 return (
                   <motion.div key={pet._id} whileHover={{ y: -8 }} className="bg-white p-6 rounded-[2rem] border-2 border-[#EADFC9] shadow-sm flex flex-col relative overflow-hidden group">
                     
-                    {/* Dynamic 3-State Adoption Badge */}
-                    <div className={`absolute top-8 right-8 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider text-white ${
-                      lifecycleStatus === 'Unavailable' ? 'bg-[#E29393]' : 
+                    <div className={`absolute top-8 right-8 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider text-white select-none shadow-sm ${
+                      lifecycleStatus === 'Adopted' ? 'bg-[#E29393]' : 
                       lifecycleStatus === 'Pending' ? 'bg-amber-500' : 'bg-[#4E6E58]'
                     }`}>
                       {lifecycleStatus}
@@ -221,10 +262,9 @@ export default function UnifiedDashboard() {
                       <p className="text-[#E29393] font-bold text-lg mb-6">Adoption Fee: {pet.adoptionFee === 0 ? "Free" : `$${pet.adoptionFee}`}</p>
                     </div>
                     
-                    {/* ACTION ITEMS GRID */}
                     <div className="grid grid-cols-2 gap-2 mt-auto">
                       <button onClick={() => { setSelectedPet(pet); setIsRequestModalOpen(true); }} className="col-span-2 flex items-center justify-center gap-2 p-3 bg-[#4E6E58] rounded-[1rem] text-xs font-black text-white hover:bg-[#3B5443] transition-colors">
-                        <ListChecks size={16} /> Incoming Requests ({receivedRequests.filter(r => r.petId === pet._id).length})
+                        <ListChecks size={16} /> Incoming Requests ({associatedRequests.length})
                       </button>
                       
                       <button onClick={() => router.push(`/our-gems/${pet._id}`)} className="flex items-center justify-center gap-2 p-3 bg-[#FBF8F3] rounded-[1rem] text-xs font-black text-[#8A7979] hover:bg-[#EADFC9] transition-colors">
@@ -246,10 +286,10 @@ export default function UnifiedDashboard() {
           )}
         </div>
 
-        {/* RIGHT COLUMN: DASHBOARD VIEW -> MY REQUESTS (SENT APPLICATIONS) */}
-        <aside id="my-requests-view" className="lg:col-span-4 space-y-6">
-          <div className="bg-[#EADFC9] p-8 rounded-[2.5rem] text-[#3C3232] shadow-xl relative flex flex-col h-full max-h-[800px]">
-            <div className="mb-6">
+        {/* RIGHT COLUMN: MY SENT APPLICATIONS */}
+        <aside id="my-requests-view" className="lg:col-span-4 h-full">
+          <div className="bg-[#EADFC9] p-8 rounded-[2.5rem] text-[#3C3232] shadow-xl relative flex flex-col h-[750px]">
+            <div className="mb-6 flex-shrink-0">
               <span className="text-[10px] font-black tracking-widest text-[#3C3232]/60 bg-white/40 px-3 py-1 rounded-md uppercase inline-block mb-1">Dashboard Component</span>
               <div className="flex items-center gap-3">
                 <Heart size={28} className="text-[#E29393] fill-[#E29393]" />
@@ -257,7 +297,7 @@ export default function UnifiedDashboard() {
               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+            <div className="flex-1 cozy-scrollbar pr-1 space-y-4">
               {sentRequests.length === 0 ? (
                 <div className="text-center py-10 opacity-60">
                   <p className="font-bold">No applications yet.</p>
@@ -282,8 +322,8 @@ export default function UnifiedDashboard() {
 
                     <div className="flex items-center justify-between mt-4">
                       <span className={`text-[10px] px-3 py-1.5 rounded-xl uppercase font-black
-                        ${req.status === 'approved' ? 'bg-[#C1D6C7] text-[#4E6E58]' : 
-                          req.status === 'rejected' ? 'bg-[#FFF0F0] text-[#E29393]' : 
+                        ${req.status?.toLowerCase() === 'approved' ? 'bg-[#C1D6C7] text-[#4E6E58]' : 
+                          req.status?.toLowerCase() === 'rejected' ? 'bg-[#FFF0F0] text-[#E29393]' : 
                           'bg-[#FBF8F3] text-[#8A7979]'}`}>
                         {req.status}
                       </span>
@@ -305,24 +345,29 @@ export default function UnifiedDashboard() {
         </aside>
       </main>
 
-      {/* --- MODAL RENDERING WINDOWS --- */}
+      {/* --- MODALS --- */}
       <AnimatePresence>
         
-        {/* VIEW RECEIVED REQUESTS MODAL CONTEXT */}
+        {/* VIEW RECEIVED REQUESTS MODAL */}
         {isRequestModalOpen && selectedPet && (
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white p-8 rounded-[2.5rem] max-w-md w-full border-4 border-[#EADFC9] shadow-2xl relative">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto pt-24 pb-12">
+            <motion.div 
+              initial={{ scale: 0.93, opacity: 0, y: 15 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.93, opacity: 0, y: 15 }} 
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white p-8 rounded-[2.5rem] max-w-md w-full border-4 border-[#EADFC9] shadow-2xl relative flex flex-col my-auto"
+            >
               <h3 className="font-black text-2xl mb-2 text-[#3C3232]">Adopters for {selectedPet.name}</h3>
               <p className="text-sm text-[#A89898] mb-1">Review your pending incoming applications.</p>
               
-              {/* Challenge Visual Lockout Marker Block */}
-              {selectedPet.status === 'Adopted' && (
+              {selectedPet.status?.toLowerCase() === 'adopted' && (
                 <div className="mb-4 text-xs font-bold text-[#E29393] bg-[#FFF0F0] p-3 rounded-xl border border-[#F0A8A8]/40 shadow-sm">
                   🔒 Adoption Completed: Only one choice can be accepted. Action options on remaining requests are closed.
                 </div>
               )}
               
-              <div className="max-h-[50vh] overflow-y-auto custom-scrollbar pr-2 space-y-4 mt-2">
+              <div className="max-h-[40vh] cozy-scrollbar pr-1 space-y-4 mt-2">
                 {receivedRequests.filter(r => r.petId === selectedPet._id).length === 0 ? (
                   <p className="text-[#A89898] text-sm text-center py-8 font-bold bg-[#FBF8F3] rounded-2xl">No requests yet. 🐾</p>
                 ) : (
@@ -344,8 +389,7 @@ export default function UnifiedDashboard() {
                         "{r.message}"
                       </p>
 
-                      {/* BLOCK CHOICES IF ALREADY ADOPTED */}
-                      {r.status === 'pending' && selectedPet.status !== 'Adopted' ? (
+                      {r.status?.toLowerCase() === 'pending' && selectedPet.status?.toLowerCase() !== 'adopted' ? (
                         <div className="grid grid-cols-2 gap-2 mt-4">
                           <button onClick={() => handleUpdateAppStatus(r._id, selectedPet._id, 'approved')} className="flex items-center justify-center gap-1 py-2.5 bg-[#4E6E58] text-white rounded-xl text-xs font-black shadow-md hover:bg-[#3B5443] transition-colors">
                             <Check size={14}/> Approve
@@ -356,31 +400,34 @@ export default function UnifiedDashboard() {
                         </div>
                       ) : (
                         <div className={`mt-4 text-center py-2 rounded-xl text-xs font-black uppercase 
-                          ${r.status === 'approved' ? 'bg-[#C1D6C7] text-[#4E6E58]' : 
-                            r.status === 'rejected' ? 'bg-[#FFF0F0] text-[#E29393]' : 
+                          ${r.status?.toLowerCase() === 'approved' ? 'bg-[#C1D6C7] text-[#4E6E58]' : 
+                            r.status?.toLowerCase() === 'rejected' ? 'bg-[#FFF0F0] text-[#E29393]' : 
                             'bg-slate-200 text-slate-500 italic'}`}>
-                          {r.status === 'pending' && selectedPet.status === 'Adopted' ? 'Unavailable (Closed)' : r.status}
+                          {r.status?.toLowerCase() === 'pending' && selectedPet.status?.toLowerCase() === 'adopted' ? 'Unavailable (Closed)' : r.status}
                         </div>
                       )}
                     </div>
                   ))
                 )}
               </div>
-              <button onClick={() => setIsRequestModalOpen(false)} className="mt-6 w-full p-4 bg-[#3C3232] text-white rounded-2xl font-black text-sm hover:bg-[#1A1616] transition-colors">Close Viewer</button>
+              <button onClick={() => setIsRequestModalOpen(false)} className="mt-6 flex-shrink-0 w-full p-4 bg-[#3C3232] text-white rounded-2xl font-black text-sm hover:bg-[#1A1616] transition-colors">Close Viewer</button>
             </motion.div>
           </div>
         )}
 
-        {/* ADD / EDIT PET MODAL (WITH EXPLICIT VISUAL AUTOFILL FIELD AT TOP) */}
+        {/* ADD / EDIT PET MODAL */}
         {modalMode && (
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto pt-24 pb-12">
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[2.75rem] p-8 md:p-10 border-[3px] border-[#EADFC9] shadow-2xl relative custom-scrollbar"
+              initial={{ scale: 0.93, opacity: 0, y: 15 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.93, opacity: 0, y: 15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white w-full max-w-2xl rounded-[2.75rem] p-8 md:p-10 border-[3px] border-[#EADFC9] shadow-2xl relative my-auto"
             >
               <button 
                 onClick={() => setModalMode(null)} 
-                className="absolute top-8 right-8 w-10 h-10 bg-[#FBF8F3] text-[#A89898] hover:text-[#3C3232] rounded-full flex items-center justify-center transition-colors"
+                className="absolute top-8 right-8 w-10 h-10 bg-[#FBF8F3] text-[#A89898] hover:text-[#3C3232] rounded-full flex items-center justify-center transition-colors z-10"
               >
                 <X size={20} strokeWidth={3} />
               </button>
@@ -395,9 +442,7 @@ export default function UnifiedDashboard() {
                 Fill out the fields below. The listing will be anchored under your verified account.
               </p>
 
-              <form onSubmit={handleAddOrUpdateSubmit} className="space-y-5">
-                
-                {/* REQUIREMENT: Visual field at top of form mapping out auto-filled read-only ownerEmail */}
+              <form onSubmit={handleAddOrUpdateSubmit} className="space-y-5 max-h-[55vh] cozy-scrollbar pr-1">
                 <div className="bg-[#FBF8F3] p-4 rounded-2xl border-2 border-[#EADFC9]/60">
                   <label className="block text-[10px] font-black uppercase text-[#4E6E58] mb-1.5 tracking-wider">
                     Owner Email Field Requirement (Auto-Filled / Read-Only)

@@ -78,18 +78,23 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState({ status: "", text: "" });
   const [updating, setUpdating] = useState(false);
+  const [hasSynced, setHasSynced] = useState(false); // Tracks initial context load
 
-  // Sync state once user details load from context
+  // Sync state once user details load from context (runs safely on initialization)
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login");
-    } else if (user) {
-      setFormData({
-        name: user.name || "",
-        photoUrl: user.photoUrl || "",
-      });
+    if (!loading) {
+      if (!user) {
+        router.push("/login");
+      } else if (!hasSynced) {
+        // Hydrate the form exactly once when data becomes available
+        setFormData({
+          name: user.name || "",
+          photoUrl: user.photoUrl || "",
+        });
+        setHasSynced(true);
+      }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, hasSynced]);
 
   if (loading || !user) {
     return (
@@ -110,7 +115,7 @@ export default function ProfilePage() {
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormChanged) return; // Guard clause against accidental empty hits
+    if (!isFormChanged) return; 
 
     setMessage({ status: "", text: "" });
     setUpdating(true);
@@ -134,9 +139,16 @@ export default function ProfilePage() {
       );
 
       if (response.data && response.data.success) {
+        // 1. Instantly push the updated details back into Auth Context
         setUser({ ...response.data.user });
-        toast.success("Profile sync completed! 🌸", { id: loadingToast });
         
+        // 2. Clear out update flags and close inputs smoothly
+        setUpdating(false);
+        setIsEditing(false);
+        
+        toast.success("Profile sync completed! 🌸", { id: loadingToast });
+
+        // 3. Force a true browser reload after a short delay so the toast is readable
         setTimeout(() => {
           window.location.reload();
         }, 800);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -43,9 +43,8 @@ function FloatingEmoji({
   initialPos = { top: "50%", left: "50%" },
   rotateRange = 15,
 }: FloatingEmojiProps) {
-  // Generate random drift coordinates
-  const driftX = useState(() => Math.random() * 80 - 40)[0]; // Drift between -40px and 40px X
-  const driftY = useState(() => Math.random() * 80 - 40)[0]; // Drift between -40px and 40px Y
+  const driftX = useState(() => Math.random() * 80 - 40)[0];
+  const driftY = useState(() => Math.random() * 80 - 40)[0];
   const rotateEnd = useState(() => Math.random() * (rotateRange * 2) - rotateRange)[0];
 
   return (
@@ -138,9 +137,10 @@ export default function LoginPage() {
     }
   };
 
+  // --- GOOGLE SIGN IN INTEGRATION ---
   const handleGoogleLogin = () => {
-    toast("Social integrations coming soon to the garden! 🌿", {
-      icon: "💎",
+    toast.loading("Redirecting to Google... 🌿", {
+      duration: 2000,
       style: {
         background: "#FAF5E7",
         color: "#635347",
@@ -150,15 +150,18 @@ export default function LoginPage() {
         fontWeight: "bold",
       },
     });
+
+    // Point this to your backend server URL redirect endpoint
+    // Example backend route structure: http://localhost:5000/api/auth/google
+    const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    window.location.href = `${backendBaseUrl}/api/auth/google`;
   };
 
   return (
     <main className="min-h-screen bg-[#FBF8F3] flex items-center justify-center py-20 px-4 relative overflow-hidden selection:bg-[#F0A8A8]/30">
       
-      {/* Cozy Web Grid Texture Overlay */}
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none z-0 bg-[linear-gradient(to_right,#4A3E3D_1px,transparent_1px),linear-gradient(to_bottom,#4A3E3D_1px,transparent_1px)] bg-[size:24px_24px]" />
 
-      {/* Aesthetic Organics & Floating Emojis */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <FloatingEmoji emoji="🌿" delay={1} initialPos={{ top: "15%", left: "12%" }} />
         <FloatingEmoji emoji="🌸" delay={3} initialPos={{ bottom: "20%", right: "15%" }} rotateRange={20} />
@@ -170,7 +173,6 @@ export default function LoginPage() {
         <div className="absolute top-1/4 left-1/3 w-[400px] h-[400px] bg-[#F0A8A8]/10 rounded-full blur-[100px]" />
       </div>
 
-      {/* --- PINK CIRCLE AURA BEHIND FORM --- */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 0.4, scale: 1 }}
@@ -178,17 +180,14 @@ export default function LoginPage() {
         className="absolute w-[600px] h-[600px] bg-[#F0A8A8]/15 rounded-full blur-[120px] pointer-events-none z-5"
       />
 
-      {/* --- LARGER ANIMATED FORM CONTAINER --- */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
         className="bg-[#FCFAF7] w-full max-w-xl rounded-[2.75rem] p-10 md:p-14 shadow-[0_30px_70px_rgba(78,110,88,0.08)] border-[3px] border-[#EADFC9] relative z-10 overflow-hidden"
       >
-        {/* Folk-Art Border Accent Flag */}
-        <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-right bg-[#4E6E58]" />
+        <div className="absolute top-0 inset-x-0 h-2 bg-[#4E6E58]" />
 
-        {/* Brand Header */}
         <motion.div variants={itemVariants} className="text-center mb-10">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#E8EFE9] border border-[#C4D7CB] text-[10px] uppercase tracking-widest font-black text-[#3B5443] mb-4">
             <Sparkles size={10} className="text-[#4E6E58]" /> Sanctuary Login
@@ -199,10 +198,7 @@ export default function LoginPage() {
           </p>
         </motion.div>
 
-        {/* Main Interaction Form */}
         <form onSubmit={handleCredentialsLogin} className="space-y-6">
-          
-          {/* Email Block */}
           <motion.div variants={itemVariants} className="group">
             <label className="block text-[11px] font-black text-[#5C4D4D] uppercase tracking-wider mb-2.5 ml-1">
               Email Address
@@ -223,7 +219,6 @@ export default function LoginPage() {
             </div>
           </motion.div>
 
-          {/* Password Block */}
           <motion.div variants={itemVariants} className="group">
             <label className="block text-[11px] font-black text-[#5C4D4D] uppercase tracking-wider mb-2.5 ml-1">
               Password
@@ -251,7 +246,6 @@ export default function LoginPage() {
             </div>
           </motion.div>
 
-          {/* Core Submit Button */}
           <motion.button
             variants={itemVariants}
             whileHover={{ scale: 1.01, backgroundColor: "#425E4B" }}
@@ -268,7 +262,6 @@ export default function LoginPage() {
           </motion.button>
         </form>
 
-        {/* Separator Line */}
         <motion.div variants={itemVariants} className="relative my-8 text-center">
           <hr className="border-[#EADFC9]" />
           <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#FCFAF7] px-4.5 text-[10px] uppercase tracking-widest font-black text-[#A89898]">
@@ -276,7 +269,6 @@ export default function LoginPage() {
           </span>
         </motion.div>
 
-        {/* Custom Styled Google Action */}
         <motion.button
           variants={itemVariants}
           whileHover={{ scale: 1.01, borderColor: "#B2A48D", backgroundColor: "#F7F2E9" }}
@@ -294,7 +286,6 @@ export default function LoginPage() {
           Continue with Google
         </motion.button>
 
-        {/* Dynamic Navigation Footer */}
         <motion.p variants={itemVariants} className="text-center text-xs text-[#7A6A6A] font-semibold mt-8">
           New around these parts?{" "}
           <Link href="/register" className="text-[#F0A8A8] font-black hover:text-[#DB8B8B] transition-colors ml-1 underline underline-offset-4 decoration-2">
