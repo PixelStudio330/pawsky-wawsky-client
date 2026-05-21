@@ -1,13 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import axios from 'axios';
-
-// Ensure cookies are passed dynamically across cross-origin requests
-axios.defaults.withCredentials = true;
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-const API_URL = `${BASE_URL}/api/auth`;
+import api from '../lib/axios'; // 👈 Import your custom Axios instance file here!
 
 export interface User {
   name: string;
@@ -32,7 +26,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkUserSession = async () => {
     try {
-      const response = await axios.get(`${API_URL}/me`);
+      // 🌸 Uses your 'api' instance that includes withCredentials and the correct baseURL automatically
+      const response = await api.get('/api/auth/me');
       if (response.data.success && response.data.user) {
         setUser({ ...response.data.user }); 
       } else {
@@ -50,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (credentials: object) => {
-    const response = await axios.post(`${API_URL}/login`, credentials);
+    const response = await api.post('/api/auth/login', credentials);
     if (response.data.success && response.data.user) {
       setUser({ ...response.data.user }); 
     }
@@ -58,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await axios.post(`${API_URL}/logout`);
+      await api.post('/api/auth/logout');
     } catch (err) {
       console.error(err);
     } finally {
