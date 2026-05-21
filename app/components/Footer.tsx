@@ -32,7 +32,6 @@ export default function BubblyPawskyFooter() {
 
   // Handles the smooth slide-up animation and purges the URL hash after 500ms
   const handleScrollAndClearHash = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    // If it's an internal hash link on the homepage
     if (href.startsWith("/#")) {
       const targetId = href.replace("/#", "");
       const element = document.getElementById(targetId);
@@ -40,10 +39,8 @@ export default function BubblyPawskyFooter() {
       if (element) {
         e.preventDefault();
         
-        // Trigger smooth native layout slide
         element.scrollIntoView({ behavior: "smooth" });
 
-        // Wait exactly 500ms for the animation flow before clearing history cache
         setTimeout(() => {
           window.history.replaceState(
             null, 
@@ -66,6 +63,7 @@ export default function BubblyPawskyFooter() {
     },
   };
 
+  // Fixed formatting: Attached "as const" properly inside the statement assignment
   const letterVariants = {
     initial: { y: 0 },
     animate: {
@@ -76,7 +74,7 @@ export default function BubblyPawskyFooter() {
         ease: "easeInOut",
       },
     },
-  };
+  } as const;
 
   return (
     <footer className="relative w-full bg-[#5A4E4E] text-[#FFF0F0] pb-8 pt-12 select-none mt-20 overflow-visible font-rounded">
@@ -127,8 +125,8 @@ export default function BubblyPawskyFooter() {
               <span className="flex mr-2">
                 {titleLetters.map((letter, index) => (
                   <motion.span key={index} variants={letterVariants} className="inline-block">
-                    {letter}
-                  </motion.span>
+                    {letter
+                  }</motion.span>
                 ))}
               </span>
               <span className="flex text-[#e1ebe2]">
